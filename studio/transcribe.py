@@ -210,6 +210,8 @@ def transcribe(audio: np.ndarray, on_progress=None) -> list:
             continue  # silence: skip, saves time and avoids made-up words
         todo.append((a, b, seg))
     remote = _remote_ok()
+    if not remote and not model_ready() and config.env("CLIPSX_FETCH_MODEL", config.env("PEAKCUT_FETCH_MODEL", "0")) != "1":
+        return []
     size = max(1, REMOTE_BATCH if remote else BATCH)
     groups = [todo[i:i + size] for i in range(0, len(todo), size)]
     done = [0]
