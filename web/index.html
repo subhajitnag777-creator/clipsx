@@ -1803,7 +1803,7 @@ function jobHtml(j) {
         ${j.clips.some(c => c.status === "done") ? `<button class="btn sm icon ghost" data-act="dlall" data-j="${j.id}" title="Download all clips of this video" aria-label="Download all clips of this video">${ic("down")}</button>` : ""}
         <button class="btn sm icon ghost" data-act="deljob" data-j="${j.id}" title="Delete" aria-label="Delete this video and its clips">${ic("trash")}</button>
         <label class="selck" title="Select this video and its clips"><input type="checkbox" data-sel="j:${j.id}" ${sel().has("j:" + j.id) ? "checked" : ""} aria-label="Select this video"></label>`}</div></div>
-    ${busy ? `<div class="bar"><i style="width:${Math.round(j.progress * 100)}%"></i></div><p class="sub">${esc(j.stage)} · ${Math.round(j.progress * 100)}%</p>` : ""}
+    ${busy ? `<div class="bar"><i style="width:${Math.round(j.progress * 100)}%"></i></div><p class="sub" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:4px"><span>${esc(j.stage)}</span><b style="color:var(--brand);font-weight:600">${Math.round(j.progress * 100)}%</b></p>` : ""}
     ${j.status === "done" && !j.clips.length ? `<p class="sub">${esc(j.stage)}</p>` : ""}
     ${j.error ? `<div class="err">${esc(j.error)}<button class="rep" data-act="report" data-ctx="${esc("Video failed: " + (j.title || j.source.name || "") + " | " + j.error)}">Report this</button></div>` : ""}${j.ai?.note ? `<p class="sub">${esc(j.ai.note)}</p>` : ""}
     ${j.clips.length ? `<div class="grid">${j.clips.map(c => clipHtml(j, c)).join("")}</div>` : ""}`;

@@ -416,12 +416,26 @@ def render_one(job, clip, words):
 CLIP_MINUTES = float(config.env("PEAKCUT_CLIP_MINUTES", "15"))     # the longest one clip may take to make
 
 
+def _format_eta(sec: float or int) -> str:
+    s = int(round(sec))
+    if s <= 12:
+        return "almost done"
+    if s < 60:
+        return f"about {s}s left"
+    mins = int(round(s / 60))
+    if mins <= 1:
+        return "about 1 min left"
+    return f"about {mins} mins left"
+
+
 def _wait_for_clips(job, futures, began, workers):
-    """Wait for a video's clips, but not for ever. A clip that hangs (a download that stalls, an encoder that
-    freezes) used to keep the whole video "in progress", and no other clip could be re-made. Now it is marked as
-    failed after CLIP_MINUTES and the video finishes with the clips that did work."""
+    """Wait for a video's clips, reporting live progress, clip counts and time remaining."""
+    total = len(futures)
+    t_start = time.time()
     left, given_up = list(futures), 0
     late = "This clip took too long and was stopped. Open it and press Save and re-make to try again."
+    last_ui_update = 0.0
+
     while left:
         still = []
         for f, clip in left:
@@ -437,6 +451,28 @@ def _wait_for_clips(job, futures, began, workers):
                 continue
             still.append((f, clip))
         left = still
+
+        done_count = total - len(left)
+        remaining = len(left)
+        elapsed = time.time() - t_start
+        now = time.time()
+
+        if left and (now - last_ui_update >= 1.0 or done_count > 0):
+            last_ui_update = now
+            if done_count > 0:
+                avg_clip_sec = max(10.0, elapsed / done_count)
+                batches_left = math.ceil(remaining / max(1, workers))
+                eta_sec = avg_clip_sec * batches_left
+            else:
+                batches_left = math.ceil(remaining / max(1, workers))
+                eta_sec = batches_left * 35.0
+
+            eta_text = _format_eta(eta_sec)
+            render_prog = min(0.99, 0.92 + 0.07 * (done_count / max(1, total)))
+            cur_num = min(total, done_count + 1)
+            stage_text = f"Cutting & rendering clip {cur_num} of {total} · {done_count}/{total} done · {eta_text}"
+            _set(job, stage=stage_text, progress=round(render_prog, 3))
+
         if left:
             time.sleep(1)
 
@@ -641,9 +677,17 @@ def _run_job(job):
             last = [0.0]
 
             def tp(p, i=i, a_=a_, b_=b_):
-                if now_on[0] == i and p - last[0] > 0.05:      # only the part being shown moves the bar
+                if now_on[0] == i and p - last[0] > 0.04:      # only the part being shown moves the bar
                     last[0] = p
-                    _set(job, progress=max(job["progress"], 0.14 + 0.78 * ((a_ - lo) + p * (b_ - a_)) / max(1, hi - lo)))
+                    prog = 0.14 + 0.70 * ((a_ - lo) + p * (b_ - a_)) / max(1, hi - lo)
+                    elapsed = time.time() - t0
+                    if prog > 0.18:
+                        total_est = elapsed / prog
+                        rem_sec = max(5, round(total_est - elapsed))
+                        eta_t = f" · {_format_eta(rem_sec)}"
+                    else:
+                        eta_t = ""
+                    _set(job, stage=f"Writing the transcript{where}{eta_t}", progress=round(prog, 3))
             heard[i] = ahead.submit(ctx.bind(transcribe.transcribe), audio[a_:b_], tp)
 
     for bi, (a, b) in enumerate(blocks):
@@ -660,10 +704,10 @@ def _run_job(job):
             hear(bi)
             hear(bi + 1)
             bw = heard.pop(bi).result()
-        _set(job, progress=max(job["progress"], 0.14 + 0.78 * (b - lo) / max(1, hi - lo)))
+        _set(job, progress=max(job["progress"], 0.14 + 0.70 * (b - lo) / max(1, hi - lo)))
         words += [dict(w, s=round(w["s"] + shift, 2), e=round(w["e"] + shift, 2)) for w in bw]
         (d / "words.json").write_text(json.dumps(words), encoding="utf-8")
-        _set(job, stage="Finding the best moments" + where, word_count=len(words))
+        _set(job, stage="Finding the best moments with AI" + where, word_count=len(words))
         left = int(o["max_clips"]) - len(job["clips"])
         if left <= 0 or len(bw) < 8:
             job["done_blocks"] = bi + 1
@@ -671,8 +715,15 @@ def _run_job(job):
             continue
         quota = max(1, math.ceil(left / (len(blocks) - bi)))
         s0 = int((a - lo) / 16000)
+        def on_find_prog(cur_win, total_win):
+            ai_p = min(0.915, 0.85 + 0.065 * (cur_win / max(1, total_win)))
+            rem_s = max(5, (total_win - cur_win) * 8)
+            eta_t = _format_eta(rem_s)
+            _set(job, stage=f"AI picking best moments (part {cur_win} of {total_win}) · {eta_t}", progress=round(ai_p, 3))
+
         found, ai = brain.find_clips(bw, db[s0: s0 + int((b - a) / 16000) + 1], (b - a) / 16000, job["title"],
-                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]), notes.append)
+                                     job["uploader"], quota, int(o["min_len"]), int(o["max_len"]), notes.append,
+                                     on_progress=on_find_prog)
         tokens += ai.get("tokens", 0)
         model = ai.get("model") or model
         if ai.get("note"):
@@ -687,8 +738,7 @@ def _run_job(job):
         job["done_blocks"] = bi + 1       # a restart from here on carries on with the next part
         save(job)
     if futures:
-        _set(job, stage="Finishing the clips", progress=max(job["progress"], 0.92))
-    _wait_for_clips(job, futures, began, renders._max_workers)
+        _wait_for_clips(job, futures, began, renders._max_workers)
     if exact:           # keep our own words for the clips in the saved transcript, so editing a clip later uses them
         for a_s, b_s, tw in exact.values():
             words = [w for w in words if not a_s <= w["s"] < b_s] + tw

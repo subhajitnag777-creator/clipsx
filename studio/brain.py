@@ -327,7 +327,7 @@ def fallback_by_loudness(db, words, n, max_len, duration, title="", uploader="")
     return picks
 
 
-def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=15, max_len=60, log=print):
+def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=15, max_len=60, log=print, on_progress=None):
     z = loud_zscore(db)
     lines = make_lines(words, z)
     if not lines:
@@ -339,7 +339,12 @@ def find_clips(words, db, duration, title="", uploader="", max_clips=6, min_len=
         windows.append((t, min(duration, t + WINDOW_SEC)))
         t += WINDOW_SEC - OVERLAP_SEC
     per_window = max(2, min(8, int(np.ceil(max_clips * 1.5 / len(windows))) + 1))
-    for a, b in windows:
+    for idx, (a, b) in enumerate(windows, 1):
+        if on_progress:
+            try:
+                on_progress(idx, len(windows))
+            except Exception:
+                pass
         chunk = [l for l in lines if a <= l["s"] < b]
         if len(chunk) < 3:
             continue
