@@ -27,9 +27,9 @@
 <script>document.documentElement.classList.add("js")</script>
 <script src="/assets/gradient-ascii.js" defer></script>
 <style>
-:root{--brand:#FF8B33;--brand-hi:#FF9A4C;--ink:#2A1A12;--soft:#FFF2E8;--line-b:#FFD9BC;--deep:#A9480A;
-  --frame:#1E1612;--frame-2:#2C221D;--frame-text:#F4EEEA;--frame-dim:#A99A91;
-  --muted:#F7F4F1;--line:#EEE8E4;--line-2:#E1D9D3;--text:#211813;--dim:#6D6159;--faint:#A0948C;--good:#0F8A57;
+:root{--brand:#F59E0B;--brand-hi:#FFB800;--ink:#18181B;--soft:#FFFBEB;--line-b:#FEF08A;--deep:#B45309;
+  --frame:#18181B;--frame-2:#27272A;--frame-text:#F4F4F5;--frame-dim:#A1A1AA;
+  --muted:#FAFAFA;--line:#E4E4E7;--line-2:#D4D4D8;--text:#18181B;--dim:#52525B;--faint:#A1A1AA;--good:#0F8A57;
   --r-lg:16px;--r:12px;--r-sm:8px;--ease:cubic-bezier(.2,.7,.2,1);color-scheme:light}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -40,12 +40,12 @@ footer.site .fwrap{max-width:1160px;margin:0 auto;padding:0 24px}
 footer.site .fgrid{display:grid;grid-template-columns:1.4fr repeat(3,1fr);gap:32px}
 footer.site .fbrand img{height:30px;display:block;margin-bottom:14px}
 footer.site .fbrand p{max-width:300px;line-height:1.6;margin:0 0 18px;color:#B9A597}
-footer.site .fbrand a.fcta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;background:#FF8B33;color:#2A1A12;font-weight:600;text-decoration:none;transition:background-color .15s ease}
-footer.site .fbrand a.fcta:hover{background:#FF9A4C}
+footer.site .fbrand a.fcta{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 16px;border-radius:10px;background:var(--brand);color:#18181B;font-weight:600;text-decoration:none;transition:background-color .15s ease}
+footer.site .fbrand a.fcta:hover{background:var(--brand-hi)}
 footer.site h4{font-size:13px;font-weight:600;color:#fff;margin:4px 0 14px}
 footer.site ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:10px}
 footer.site ul a{color:#B9A597;text-decoration:none;transition:color .15s ease}
-footer.site ul a:hover{color:#FF8B33}
+footer.site ul a:hover{color:var(--brand)}
 footer.site .fbottom{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:44px;padding-top:20px;border-top:1px solid rgba(255,255,255,.08);font-size:13px;color:#8C7B70}
 @media (max-width:760px){footer.site .fgrid{grid-template-columns:1fr 1fr}footer.site .fbrand{grid-column:1/-1}}
 body{margin:0;background:#fff;color:var(--text);font:16px/1.55 "Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased;overflow-x:hidden}

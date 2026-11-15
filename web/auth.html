@@ -3,147 +3,1547 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Sign in to Clips X</title>
-<meta name="description" content="Sign in or create your Clips X account.">
+<title>Sign in to Clips X · AI Video Clipping & Short-Form Automation</title>
+<meta name="description" content="Turn long videos and live streams into viral 9:16 Shorts, Reels, and TikToks with AI. Automatic moment detection, bouncing captions, virality scores, and multi-platform publishing.">
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <style>
-:root{--brand:#FF8B33;--brand-hi:#FF9A4C;--ink:#2A1A12;--soft:#FFF2E8;--line-b:#FFD9BC;--deep:#A9480A;
-  --frame:#1E1612;--frame-2:#2C221D;--frame-text:#F4EEEA;--frame-dim:#A99A91;
-  --muted:#F7F4F1;--line:#EEE8E4;--line-2:#E1D9D3;--text:#211813;--dim:#6D6159;--faint:#A0948C;--bad:#D3343F;--bad-soft:#FDECEE;
-  --r-lg:16px;--r:12px;--r-sm:8px;color-scheme:light}
-*{box-sizing:border-box}
-[hidden]{display:none!important}
-html{scroll-behavior:smooth}
-body{margin:0;background:#fff;color:var(--text);font:16px/1.55 "Geist","Segoe UI",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-h1,h2,h3,p{margin:0}
-a{color:inherit}
-svg{width:18px;height:18px;flex:none;fill:currentColor}
-:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:44px;padding:0 20px;border-radius:var(--r);border:1px solid var(--line-2);background:#fff;color:var(--text);
-  font:inherit;font-weight:600;font-size:15px;cursor:pointer;text-decoration:none;white-space:nowrap;transition:background-color .15s ease,border-color .15s ease,color .15s ease}
-.btn:hover{background:var(--muted);border-color:#D4CAC3}
-.btn.primary{background:var(--brand);border-color:var(--brand);color:var(--ink)}
-.btn.primary:hover{background:var(--brand-hi);border-color:var(--brand-hi)}
-.btn.dark{background:var(--ink);border-color:var(--ink);color:#fff}.btn.dark:hover{background:#3A2C25;border-color:#3A2C25}
-.btn.sm{height:38px;padding:0 14px;font-size:14px}
-.btn.lg{height:52px;padding:0 26px;font-size:16px}
-.btn:disabled{opacity:.5;cursor:default}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+:root {
+  --yellow-50: #FFFDF5;
+  --yellow-100: #FEF9C3;
+  --yellow-200: #FEF08A;
+  --yellow-300: #FDE047;
+  --yellow-400: #FACC15;
+  --yellow-500: #EAB308;
+  --yellow-600: #CA8A04;
+  --yellow-700: #A16207;
+  --amber-500: #F59E0B;
+  --amber-600: #D97706;
+  --gold-grad: linear-gradient(135deg, #FFB800 0%, #F59E0B 100%);
+  --gold-glow: 0 10px 28px -4px rgba(245, 158, 11, 0.35);
+  --gold-border: rgba(245, 158, 11, 0.28);
+  --dark: #0F0F11;
+  --text-main: #18181B;
+  --text-dim: #52525B;
+  --text-faint: #A1A1AA;
+  --line: #E4E4E7;
+  --line-light: #F4F4F5;
+  --card-bg: rgba(255, 255, 255, 0.94);
+  --bad: #DC2626;
+  --bad-bg: #FEF2F2;
+  --ok: #16A34A;
+  --ok-bg: #F0FDF4;
+  --r-sm: 8px;
+  --r: 14px;
+  --r-lg: 20px;
+  --r-xl: 28px;
+  color-scheme: light;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+[hidden] { display: none !important; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  background: #FAFAFA;
+  color: var(--text-main);
+  font: 15px/1.55 "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+svg { width: 18px; height: 18px; flex: none; fill: currentColor; }
 
-body{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);background:var(--frame)}
-.side{color:var(--frame-text);padding:40px 48px;display:flex;flex-direction:column;justify-content:space-between;min-height:100vh}
-.side img{height:38px}
-.side h1{font-size:clamp(30px,3.2vw,42px);line-height:1.1;letter-spacing:-.03em;font-weight:700;color:#fff;max-width:440px}
-.side h1 em{font-style:normal;color:var(--brand)}
-.side ul{list-style:none;padding:0;margin:28px 0 0;display:flex;flex-direction:column;gap:14px;color:var(--frame-dim);font-size:16px}
-.side li{display:flex;gap:12px;align-items:flex-start}.side li svg{color:var(--brand);margin-top:3px}
-.side small{color:var(--frame-dim);font-size:13px}
-.main{background:#fff;margin:8px 8px 8px 0;border-radius:var(--r-lg);display:grid;place-items:center;padding:32px 20px}
-.card{width:100%;max-width:400px}
-.card h2{font-size:28px;font-weight:700;letter-spacing:-.03em;color:var(--ink)}
-.card>p{color:var(--dim);margin:8px 0 26px}
-form{display:flex;flex-direction:column;gap:16px}
-label{display:flex;flex-direction:column;gap:7px;font-size:13px;font-weight:600;color:var(--dim)}
-input{height:46px;padding:0 14px;border-radius:var(--r-sm);border:1px solid var(--line-2);background:#fff;font:inherit;color:var(--text);outline:none;transition:border-color .15s ease,background-color .15s ease}
-input:hover{border-color:#D4CAC3}input:focus{border-color:var(--brand);background:#fff}
-input:focus-visible{outline:none}
-input::placeholder{color:var(--faint)}
-.btn{width:100%;height:48px}
-.or{display:flex;align-items:center;gap:14px;color:var(--faint);font-size:13px;margin:20px 0}
-.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
-.err{display:none;background:var(--bad-soft);color:var(--bad);padding:11px 14px;border-radius:var(--r);font-size:14px;font-weight:500}
-.err.on{display:block}
-.swap{margin-top:22px;text-align:center;color:var(--dim);font-size:15px}
-.swap a{color:var(--deep);font-weight:600;text-decoration:none}.swap a:hover{text-decoration:underline}
-.hint{font-size:13px;color:var(--faint);font-weight:400}
-.pwrow{display:flex;justify-content:space-between;align-items:baseline}
-.pwbox{position:relative;display:block}
-.pwbox input{width:100%;padding-right:48px}
-.pwbox button{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:36px;height:36px;border:0;border-radius:8px;background:transparent;color:var(--faint);display:grid;place-items:center;cursor:pointer;transition:color .15s ease,background-color .15s ease}
-.pwbox button:hover{color:var(--text);background:var(--muted, #F7F4F1)}
-.pwbox button svg{width:18px;height:18px;fill:currentColor}
-.pwbox button[aria-pressed=true]{color:var(--deep)}
-.pwrow a{font-size:13px;font-weight:600;color:var(--deep);text-decoration:none}.pwrow a:hover{text-decoration:underline}
-.legal{margin-top:14px;font-size:12px;color:var(--faint);text-align:center;line-height:1.5}
-.legal a{color:var(--dim)}
-.g{width:20px;height:20px}
-.mobile-logo{display:none}
-@media (max-width:860px){body{grid-template-columns:1fr;background:#fff}.side{display:none}.main{margin:0;border-radius:0;min-height:100vh;align-content:center}.mobile-logo{display:block;height:34px;margin-bottom:28px}}
+/* ============================================================ BACKGROUND PREVIEW (AUTHENTIC STUDIO) */
+.bg-preview {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  background: #F4F4F5;
+  pointer-events: none;
+  user-select: none;
+  filter: blur(14px) brightness(0.97) saturate(1.1);
+  -webkit-filter: blur(14px) brightness(0.97) saturate(1.1);
+  transform: scale(1.02);
+  transition: filter 0.8s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.6s ease;
+  will-change: filter, opacity;
+}
+.bg-sidebar {
+  background: #18181B;
+  color: #F4F4F5;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.bg-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 19px;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+.bg-logo-badge {
+  width: 28px;
+  height: 28px;
+  background: var(--gold-grad);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: #000;
+  font-weight: 900;
+  font-size: 16px;
+}
+.bg-nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bg-nav-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #A1A1AA;
+}
+.bg-nav-item.active {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  font-weight: 600;
+}
+.bg-creators-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #71717A;
+  margin-top: 10px;
+  padding-left: 10px;
+}
+.bg-ai-badge {
+  margin-top: auto;
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  padding: 12px 14px;
+  border-radius: 12px;
+}
+.bg-ai-title {
+  color: var(--amber-500);
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bg-ai-sub {
+  color: #A1A1AA;
+  font-size: 11px;
+  margin-top: 4px;
+}
+.bg-main {
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.bg-topbar {
+  height: 64px;
+  border-bottom: 1px solid #E4E4E7;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bg-topbar-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #18181B;
+}
+.bg-body {
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.bg-input-box {
+  background: #FAFAFA;
+  border: 1px solid #E4E4E7;
+  border-radius: 14px;
+  padding: 14px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.bg-input-txt {
+  color: #71717A;
+  font-size: 14px;
+}
+.bg-btn-make {
+  background: var(--gold-grad);
+  color: #000;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+}
+.bg-studio-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 24px;
+}
+.bg-phone-mock {
+  width: 260px;
+  height: 440px;
+  background: #18181B;
+  border-radius: 24px;
+  border: 4px solid #27272A;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 20px;
+}
+.bg-phone-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.65;
+}
+.bg-phone-hook {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  color: #000;
+  padding: 4px 14px;
+  border-radius: 6px;
+  font-weight: 900;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.bg-phone-caption {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  font-weight: 900;
+  font-size: 20px;
+  line-height: 1.2;
+  color: #FFFFFF;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+}
+.bg-phone-caption span {
+  color: var(--amber-500);
+}
+.bg-clips-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.bg-clip-card {
+  background: #FAFAFA;
+  border: 1px solid #E4E4E7;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.bg-clip-thumb {
+  height: 140px;
+  background: #27272A;
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+}
+.bg-clip-score {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: var(--gold-grad);
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 6px;
+}
+.bg-clip-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #18181B;
+}
+
+/* ============================================================ FROSTED BLUR OVERLAY */
+.bg-blur-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.45);
+  backdrop-filter: blur(12px) saturate(1.1);
+  -webkit-backdrop-filter: blur(12px) saturate(1.1);
+  pointer-events: none;
+  transition: opacity 0.6s ease;
+}
+
+/* ============================================================ FOREGROUND CONTAINER */
+.auth-viewport {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 32px 20px 80px;
+}
+
+/* Top Navigation Bar */
+.auth-header {
+  width: 100%;
+  max-width: 1200px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 40px;
+  padding: 0 8px;
+}
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--text-main);
+}
+.brand-logo-icon {
+  width: 36px;
+  height: 36px;
+  background: var(--gold-grad);
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+}
+.brand-logo-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: #18181B;
+}
+.brand-text {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #18181B;
+}
+.brand-text span {
+  color: var(--amber-600);
+}
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1px solid var(--gold-border);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #18181B;
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--amber-500);
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.25);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+}
+
+/* Main Split Hero & Auth */
+.auth-grid {
+  width: 100%;
+  max-width: 1200px;
+  display: grid;
+  grid-template-columns: 1fr 460px;
+  gap: 56px;
+  align-items: flex-start;
+}
+@media (max-width: 1040px) {
+  .auth-grid {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    max-width: 580px;
+  }
+}
+
+/* Left Column: Project Introduction & Highlights */
+.intro-col {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--yellow-100);
+  border: 1px solid var(--yellow-300);
+  color: var(--yellow-700);
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 999px;
+  align-self: flex-start;
+  letter-spacing: 0.02em;
+}
+.hero-title {
+  font-size: clamp(34px, 4vw, 46px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+  color: #18181B;
+}
+.hero-title .glow-yellow {
+  background: linear-gradient(135deg, #CA8A04 0%, #D97706 50%, #B45309 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
+}
+.hero-desc {
+  font-size: 16px;
+  line-height: 1.65;
+  color: var(--text-dim);
+  max-width: 600px;
+}
+
+/* Platform Highlights Grid */
+.highlights-header {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--amber-600);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.highlights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+}
+.feat-card {
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(245, 158, 11, 0.22);
+  border-radius: var(--r);
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.feat-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--amber-500);
+  box-shadow: 0 8px 24px -4px rgba(245, 158, 11, 0.18);
+}
+.feat-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.feat-icon-box {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--yellow-100);
+  color: var(--amber-600);
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+.feat-icon-box svg {
+  width: 17px;
+  height: 17px;
+}
+.feat-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #18181B;
+}
+.feat-desc {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-dim);
+}
+
+/* Right Column: Central Authentication Card */
+.auth-card-wrap {
+  width: 100%;
+}
+.auth-card {
+  background: #FFFFFF;
+  border: 1px solid var(--gold-border);
+  border-radius: var(--r-xl);
+  padding: 38px 34px;
+  box-shadow: 0 24px 64px -12px rgba(245, 158, 11, 0.18), 0 10px 30px -4px rgba(0, 0, 0, 0.06);
+  transition: transform 0.4s ease, opacity 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+.auth-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: var(--gold-grad);
+}
+.card-header {
+  text-align: center;
+  margin-bottom: 24px;
+}
+.card-title {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: #18181B;
+}
+.card-sub {
+  font-size: 14px;
+  color: var(--text-dim);
+  margin-top: 6px;
+}
+
+/* Continue with Google button */
+.btn-google {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  height: 50px;
+  border-radius: var(--r);
+  border: 1.5px solid #E4E4E7;
+  background: #FFFFFF;
+  color: #18181B;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+}
+.btn-google:hover {
+  border-color: var(--amber-500);
+  background: var(--yellow-50);
+  box-shadow: 0 6px 18px rgba(245, 158, 11, 0.18);
+  transform: translateY(-1px);
+}
+.btn-google svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Divider */
+.or-divider {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 22px 0;
+  color: var(--text-faint);
+  font-size: 13px;
+  font-weight: 500;
+}
+.or-divider::before, .or-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--line);
+}
+
+/* Tab Switcher */
+.tab-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #F4F4F5;
+  border-radius: var(--r);
+  padding: 4px;
+  margin-bottom: 24px;
+  position: relative;
+}
+.tab-btn {
+  background: transparent;
+  border: none;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding: 10px 0;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+.tab-btn.active {
+  background: #FFFFFF;
+  color: #18181B;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Forms */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.field-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.field-label a {
+  color: var(--amber-600);
+  text-decoration: none;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+.field-label a:hover {
+  text-decoration: underline;
+}
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-faint);
+  pointer-events: none;
+}
+.input-control {
+  width: 100%;
+  height: 48px;
+  padding: 0 14px 0 44px;
+  border-radius: var(--r);
+  border: 1.5px solid var(--line);
+  background: #FAFAFA;
+  font-family: inherit;
+  font-size: 14.5px;
+  color: var(--text-main);
+  outline: none;
+  transition: all 0.2s ease;
+}
+.input-control:hover {
+  border-color: #D4D4D8;
+  background: #FFFFFF;
+}
+.input-control:focus {
+  border-color: var(--amber-500);
+  background: #FFFFFF;
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+.input-control::placeholder {
+  color: var(--text-faint);
+}
+.btn-toggle-pw {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-faint);
+  cursor: pointer;
+  padding: 6px;
+  display: grid;
+  place-items: center;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+.btn-toggle-pw:hover {
+  color: var(--text-main);
+}
+
+/* Checkbox & Options */
+.options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-weight: 500;
+  user-select: none;
+}
+.checkbox-custom {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+}
+input[type="checkbox"] {
+  display: none;
+}
+input[type="checkbox"]:checked + .checkbox-custom {
+  background: var(--amber-500);
+  border-color: var(--amber-500);
+}
+input[type="checkbox"]:checked + .checkbox-custom svg {
+  display: block;
+  fill: #fff;
+}
+.checkbox-custom svg {
+  display: none;
+  width: 12px;
+  height: 12px;
+}
+
+/* Password match hint */
+.pw-match-hint {
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+  font-weight: 500;
+}
+.pw-match-hint.bad {
+  color: var(--bad);
+}
+.pw-match-hint.ok {
+  color: var(--ok);
+}
+
+/* Primary Action Button (White + Yellow Theme) */
+.btn-primary {
+  width: 100%;
+  height: 50px;
+  background: var(--gold-grad);
+  border: 1px solid rgba(217, 119, 6, 0.4);
+  border-radius: var(--r);
+  color: #18181B;
+  font-family: inherit;
+  font-size: 15.5px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: var(--gold-glow);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  margin-top: 4px;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 34px -4px rgba(245, 158, 11, 0.45);
+  background: linear-gradient(135deg, #FFC107 0%, #D97706 100%);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Spinner */
+.spinner {
+  display: none;
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(0, 0, 0, 0.2);
+  border-top-color: #18181B;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+.btn-primary.loading .spinner {
+  display: inline-block;
+}
+.btn-primary.loading .btn-text {
+  display: none;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Alert Notification */
+.alert-box {
+  display: none;
+  padding: 12px 16px;
+  border-radius: var(--r-sm);
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 14px;
+  animation: slideDown 0.2s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.alert-box.bad {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--bad-bg);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  color: var(--bad);
+}
+.alert-box.ok {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--ok-bg);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  color: var(--ok);
+}
+
+/* Switcher Prompt at bottom of card */
+.switch-prompt {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: var(--text-dim);
+}
+.switch-prompt button {
+  background: none;
+  border: none;
+  color: var(--amber-600);
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+  margin-left: 4px;
+}
+.switch-prompt button:hover {
+  text-decoration: underline;
+}
+
+/* Footer */
+.auth-footer {
+  width: 100%;
+  max-width: 1200px;
+  margin-top: 64px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+.auth-footer a {
+  color: var(--text-dim);
+  text-decoration: none;
+  margin-left: 16px;
+}
+.auth-footer a:hover {
+  color: var(--amber-600);
+}
+
+/* Smooth fade out when unlocking */
+body.unlocking .auth-card {
+  transform: scale(0.96);
+  opacity: 0;
+}
+body.unlocking .bg-blur-overlay {
+  opacity: 0;
+}
+body.unlocking .bg-preview {
+  filter: blur(0px) brightness(1) saturate(1);
+  -webkit-filter: blur(0px) brightness(1) saturate(1);
+}
 </style>
 </head>
 <body>
-<aside class="side">
-  <a href="/" aria-label="Clips X home"><img src="/brand/logo-light.svg?v=clipsx" alt="Clips X"></a>
-  <div>
-    <h1>Clips from every stream, <em>without watching all of it.</em></h1>
-    <ul>
-      <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Records live streams and clips them as they happen</span></li>
-      <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Vertical shorts with word-by-word captions and a hook</span></li>
-      <li><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M173.66,98.34a8,8,0,0,1,0,11.32l-56,56a8,8,0,0,1-11.32,0l-24-24a8,8,0,0,1,11.32-11.32L112,148.69l50.34-50.35A8,8,0,0,1,173.66,98.34ZM232,128A104,104,0,1,1,128,24,104.11,104.11,0,0,1,232,128Zm-16,0a88,88,0,1,0-88,88A88.1,88.1,0,0,0,216,128Z"/></svg><span>Free and open source: runs on your own AI key</span></li>
-    </ul>
+
+<!-- ============================================================ BACKGROUND PREVIEW OF CLIPS X DASHBOARD -->
+<div class="bg-preview" aria-hidden="true">
+  <!-- Sidebar -->
+  <aside class="bg-sidebar">
+    <div class="bg-logo">
+      <div class="bg-logo-badge">X</div>
+      <span>Clips X</span>
+    </div>
+    <div class="bg-nav-group">
+      <div class="bg-nav-item active">
+        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span>Home</span>
+      </div>
+      <div class="bg-nav-item">
+        <svg viewBox="0 0 24 24"><path d="M18 4l2 4h-3l-2-4h-2l2 4h-3l-2-4H8l2 4H7L5 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V4h-4z"/></svg>
+        <span>All videos (12)</span>
+      </div>
+      <div class="bg-creators-label">Creators</div>
+      <div class="bg-nav-item">
+        <span style="width:8px;height:8px;background:#EF4444;border-radius:50%"></span>
+        <span>SenpaiVerse (REC)</span>
+      </div>
+      <div class="bg-nav-item">
+        <span style="width:8px;height:8px;background:#9146FF;border-radius:50%"></span>
+        <span>Ludwig</span>
+      </div>
+      <div class="bg-nav-item">
+        <span style="width:8px;height:8px;background:#53FC18;border-radius:50%"></span>
+        <span>Pokimane</span>
+      </div>
+    </div>
+    <div class="bg-ai-badge">
+      <div class="bg-ai-title">
+        <svg viewBox="0 0 24 24"><path d="M11 21h-1l1-7H7.5c-.88 0-.33-.75-.31-.78C8.48 10.94 10.42 7.54 13.01 3h1l-1 7h3.51c.4 0 .62.19.4.66C12.97 17.55 11 21 11 21z"/></svg>
+        <span>Gemini 2.5 Flash</span>
+      </div>
+      <div class="bg-ai-sub">1,420 calls today · Multi-AI Ready</div>
+    </div>
+  </aside>
+
+  <!-- Studio Main -->
+  <main class="bg-main">
+    <header class="bg-topbar">
+      <div class="bg-topbar-title">Home · SenpaiVerse — 15:40 Stream</div>
+      <div style="display:flex;gap:12px;align-items:center">
+        <div style="background:#EF4444;color:#fff;font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px">● LIVE RECORDING</div>
+      </div>
+    </header>
+    <div class="bg-body">
+      <!-- Input bar -->
+      <div class="bg-input-box">
+        <div class="bg-input-txt">https://www.youtube.com/watch?v=dQw4w9WgXcQ</div>
+        <div class="bg-btn-make">Make clips</div>
+      </div>
+      <!-- Studio mockup -->
+      <div class="bg-studio-grid">
+        <div class="bg-phone-mock">
+          <div class="bg-phone-hook">WAIT FOR IT</div>
+          <div class="bg-phone-caption">
+            <span>INSANE</span> PLOT TWIST<br>HAPPENED HERE
+          </div>
+        </div>
+        <div class="bg-clips-grid">
+          <div class="bg-clip-card">
+            <div class="bg-clip-thumb">
+              <div class="bg-clip-score">98% VIRAL</div>
+            </div>
+            <div class="bg-clip-title">WAIT FOR IT - Epic Reaction</div>
+            <div style="font-size:11px;color:#71717A">0:58 · 1080x1920 60fps</div>
+          </div>
+          <div class="bg-clip-card">
+            <div class="bg-clip-thumb">
+              <div class="bg-clip-score">94% VIRAL</div>
+            </div>
+            <div class="bg-clip-title">UNEXPECTED ENDING</div>
+            <div style="font-size:11px;color:#71717A">0:51 · 1080x1920 60fps</div>
+          </div>
+          <div class="bg-clip-card">
+            <div class="bg-clip-thumb">
+              <div class="bg-clip-score">91% VIRAL</div>
+            </div>
+            <div class="bg-clip-title">BEST MOMENT OF THE YEAR</div>
+            <div style="font-size:11px;color:#71717A">1:00 · 1080x1920 60fps</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Frosted Glass Layer over Background -->
+<div class="bg-blur-overlay" id="bgBlurOverlay"></div>
+
+<!-- ============================================================ FOREGROUND AUTHENTICATION EXPERIENCE -->
+<div class="auth-viewport">
+
+  <!-- Header -->
+  <header class="auth-header">
+    <a href="/" class="brand-link" aria-label="Clips X Home">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M19.5 6.19a3.02 3.02 0 0 0-2.12-2.14C15.5 3.55 12 3.55 12 3.55s-3.5 0-5.38.5A3.02 3.02 0 0 0 4.5 6.19C4 8.07 4 12 4 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 5.38.5 5.38.5s3.5 0 5.38-.5a3.02 3.02 0 0 0 2.12-2.14C20 15.93 20 12 20 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>
+      </div>
+      <div class="brand-text">Clips <span>X</span></div>
+    </a>
+    <div class="status-pill">
+      <span class="status-dot"></span>
+      <span>24/7 AI Video Engine Online</span>
+    </div>
+  </header>
+
+  <!-- Main Hero + Auth Card Grid -->
+  <div class="auth-grid">
+
+    <!-- Left Column: About Platform & Highlights -->
+    <div class="intro-col">
+      <div class="hero-tag">
+        <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span>AI Video Clipping & Viral Short-Form Automation</span>
+      </div>
+
+      <h1 class="hero-title">
+        Turn Any Stream or Video into Viral Shorts &amp; Reels <span class="glow-yellow">in Minutes.</span>
+      </h1>
+
+      <p class="hero-desc">
+        Clips X automates your entire short-form content workflow. Our multi-AI engine scans full-length streams from YouTube, Twitch, and Kick, extracts the highest-virality moments using speech semantics and audio energy, and renders polished 9:16 vertical clips with animated bouncing subtitles and instant social publishing.
+      </p>
+
+      <div class="highlights-header">
+        <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+        <span>Platform Highlights</span>
+      </div>
+
+      <!-- 7 Feature Cards -->
+      <div class="highlights-grid">
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm1 14h-2V7h2v9z"/></svg>
+            </div>
+            <div class="feat-title">24/7 Online Platform</div>
+          </div>
+          <div class="feat-desc">Cloud workers monitor creators and automatically record and clip the moment they go live.</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5s-3 1.34-3 3 1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+            </div>
+            <div class="feat-title">Active Community &amp; Creators</div>
+          </div>
+          <div class="feat-desc">Used by top gaming streamers, video podcasters, and content agencies scaling social reach.</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </div>
+            <div class="feat-title">Powerful Editing Tools</div>
+          </div>
+          <div class="feat-desc">Automated 9:16 layouts with blurred fill, bouncing word-by-word captions, and virality scoring.</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+            </div>
+            <div class="feat-title">Fast &amp; Smooth Performance</div>
+          </div>
+          <div class="feat-desc">GPU-accelerated 720p/1080p 60fps rendering delivering ready-to-post clips in seconds.</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+            </div>
+            <div class="feat-title">Secure User Authentication</div>
+          </div>
+          <div class="feat-desc">Hardened scrypt password hashing, session tokens, and official Google OAuth integration.</div>
+        </div>
+
+        <div class="feat-card">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+            </div>
+            <div class="feat-title">Easy-to-Use Dashboard</div>
+          </div>
+          <div class="feat-desc">One-click video downloads, ZIP bundles, multi-account social queueing, and stream monitor.</div>
+        </div>
+
+        <div class="feat-card" style="grid-column: 1 / -1">
+          <div class="feat-card-top">
+            <div class="feat-icon-box">
+              <svg viewBox="0 0 24 24"><path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z"/></svg>
+            </div>
+            <div class="feat-title">Regular Updates &amp; Improvements</div>
+          </div>
+          <div class="feat-desc">Continuous enhancements with multi-AI provider fallback chains (Gemini, OpenAI, AgentRouter).</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Column: Authentication Box -->
+    <div class="auth-card-wrap">
+      <div class="auth-card" id="authCard">
+
+        <div class="card-header">
+          <h2 class="card-title" id="cardTitle">Sign in to Clips X</h2>
+          <p class="card-sub" id="cardSub">Access your AI video clipping studio</p>
+        </div>
+
+        <!-- Alert Notification Box -->
+        <div class="alert-box" id="authAlert" role="alert">
+          <span id="alertIcon"></span>
+          <span id="alertText"></span>
+        </div>
+
+        <!-- Continue with Google Button -->
+        <a class="btn-google" id="googleBtn" href="/auth/google/start?next=/app">
+          <svg viewBox="0 0 48 48" aria-hidden="true">
+            <path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.7 17.7 9.5 24 9.5z"/>
+            <path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/>
+            <path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.2.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/>
+            <path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/>
+          </svg>
+          <span id="googleBtnText">Continue with Google</span>
+        </a>
+
+        <!-- Divider -->
+        <div class="or-divider"><span>or continue with email</span></div>
+
+        <!-- Tab Switcher -->
+        <div class="tab-switcher" role="tablist">
+          <button type="button" class="tab-btn active" id="tabSignIn" role="tab" aria-selected="true">Sign In</button>
+          <button type="button" class="tab-btn" id="tabSignUp" role="tab" aria-selected="false">Sign Up</button>
+        </div>
+
+        <!-- SIGN IN FORM -->
+        <form id="signInForm" novalidate>
+          <div class="field-group">
+            <label class="field-label" for="loginEmail">Email Address</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <input class="input-control" type="email" id="loginEmail" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <div class="field-label">
+              <label for="loginPassword">Password</label>
+              <a href="#forgot" id="linkForgot">Forgot password?</a>
+            </div>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <input class="input-control" type="password" id="loginPassword" autocomplete="current-password" placeholder="Enter your password" required>
+              <button type="button" class="btn-toggle-pw" data-target="loginPassword" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="options-row">
+            <label class="checkbox-label">
+              <input type="checkbox" id="rememberMe" checked>
+              <span class="checkbox-custom">
+                <svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              </span>
+              <span>Remember me</span>
+            </label>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnSignIn">
+            <span class="btn-text">Sign In to Clips X</span>
+            <span class="spinner"></span>
+          </button>
+
+          <div class="switch-prompt">
+            Don't have an account? <button type="button" id="promptToSignUp">Create an account</button>
+          </div>
+        </form>
+
+        <!-- SIGN UP FORM -->
+        <form id="signUpForm" hidden novalidate>
+          <div class="field-group">
+            <label class="field-label" for="signupName">Full Name</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              <input class="input-control" type="text" id="signupName" autocomplete="name" placeholder="What should we call you?" maxlength="80" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="signupEmail">Email Address</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <input class="input-control" type="email" id="signupEmail" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="signupPassword">Password</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <input class="input-control" type="password" id="signupPassword" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
+              <button type="button" class="btn-toggle-pw" data-target="signupPassword" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="signupConfirmPassword">Confirm Password</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
+              <input class="input-control" type="password" id="signupConfirmPassword" autocomplete="new-password" placeholder="Re-type your password" required>
+              <button type="button" class="btn-toggle-pw" data-target="signupConfirmPassword" aria-label="Toggle password visibility">
+                <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+              </button>
+            </div>
+            <div class="pw-match-hint" id="pwMatchHint" hidden></div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnSignUp">
+            <span class="btn-text">Create Account &amp; Start Clipping</span>
+            <span class="spinner"></span>
+          </button>
+
+          <div class="switch-prompt">
+            Already have an account? <button type="button" id="promptToSignIn">Sign in</button>
+          </div>
+        </form>
+
+        <!-- FORGOT PASSWORD FORM -->
+        <form id="forgotForm" hidden novalidate>
+          <div class="field-group">
+            <label class="field-label" for="forgotEmail">Your Account Email</label>
+            <div class="input-wrap">
+              <svg class="input-icon" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              <input class="input-control" type="email" id="forgotEmail" autocomplete="email" placeholder="you@example.com" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary" id="btnForgot">
+            <span class="btn-text">Send Password Reset Link</span>
+            <span class="spinner"></span>
+          </button>
+
+          <div class="switch-prompt">
+            <button type="button" id="btnBackToLogin">← Back to Sign In</button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
   </div>
-  <small>© <span id="year"></span> Clips X · <a href="/privacy" style="color:inherit">Privacy</a> · <a href="/terms" style="color:inherit">Terms</a></small>
-</aside>
-<main class="main"><div class="card">
-  <a href="/"><img class="mobile-logo" src="/brand/logo.svg?v=clipsx" alt="Clips X"></a>
-  <h2 id="h"></h2><p id="p"></p>
-  <a class="btn" id="google" href="/auth/google/start" hidden>
-    <svg class="g" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.2C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.6 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.2 5.5-4.7 7.2l7.6 5.9c4.4-4.1 7-10.1 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.6A14.5 14.5 0 0 1 9.7 24c0-1.6.3-3.2.8-4.6l-7.9-6.2A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.2z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.2C6.5 42.6 14.6 48 24 48z"/></svg>
-    <span id="gtext"></span></a>
-  <div class="or" id="or" hidden>or use your email</div>
-  <form id="f" novalidate>
-    <div class="err" id="err" role="alert"></div>
-    <label id="namebox">Your name<input id="name" autocomplete="name" placeholder="What should we call you?" maxlength="80"></label>
-    <label>Email<input id="email" type="email" autocomplete="email" placeholder="you@example.com" required></label>
-    <label><span class="pwrow">Password<a href="/reset" id="forgot">Forgot password?</a></span><span class="pwbox"><input id="password" type="password" required minlength="8" placeholder="Your password"><button type="button" id="pwshow" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 256 256" aria-hidden="true"><path d="M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z"/></svg></button></span><span class="hint" id="pwhint">At least 8 characters.</span></label>
-    <button class="btn primary" id="go"></button>
-  </form>
-  <p class="legal" id="legal">By continuing you agree to our <a href="/terms">Terms</a> and <a href="/privacy">Privacy Policy</a>.</p>
-  <p class="swap" id="swap"></p>
-</div></main>
+
+  <!-- Footer -->
+  <footer class="auth-footer">
+    <div>© <span id="curYear"></span> Clips X. All rights reserved.</div>
+    <div>
+      <a href="/terms">Terms of Service</a>
+      <a href="/privacy">Privacy Policy</a>
+      <a href="/acceptable-use">Acceptable Use</a>
+    </div>
+  </footer>
+
+</div>
+
 <script>
-document.getElementById("year").textContent = new Date().getFullYear();
-const $ = id => document.getElementById(id), up = location.pathname === "/signup";
-const next = new URLSearchParams(location.search).get("next");
-const dest = next && /^\/(?![\/\\])[^\\\t\r\n]*$/.test(next) ? next : "/app";
-document.title = up ? "Create your Clips X account" : "Sign in to Clips X";
-$("h").textContent = up ? "Create your account" : "Welcome back";
-$("p").textContent = up ? "Start clipping in a couple of minutes." : "Sign in to get back to your clips.";
-$("go").textContent = up ? "Create account" : "Sign in";
-$("gtext").textContent = up ? "Sign up with Google" : "Sign in with Google";
-$("namebox").hidden = !up; $("pwhint").hidden = !up; $("forgot").hidden = up;
-$("password").autocomplete = up ? "new-password" : "current-password";
-$("password").placeholder = up ? "Choose a password" : "Your password";
-$("pwshow").addEventListener("click", () => {
-  const p = $("password"), on = p.type === "password";
-  p.type = on ? "text" : "password";
-  $("pwshow").setAttribute("aria-pressed", String(on));
-  $("pwshow").setAttribute("aria-label", on ? "Hide password" : "Show password");
-  p.focus();
-});
-$("swap").innerHTML = up ? 'Already have an account? <a href="/login">Sign in</a>' : 'New to Clips X? <a href="/signup">Create an account</a>';
-$("google").href = "/auth/google/start?next=" + encodeURIComponent(dest);
-const fail = m => { $("err").textContent = m; $("err").classList.add("on"); };
-if (new URLSearchParams(location.search).get("error") === "google") fail("Google sign-in didn't finish. Try again, or use your email.");
-fetch("/api/public").then(r => r.json()).then(p => {
-  if (p.google) { $("google").hidden = false; $("or").hidden = false; }
-}).catch(() => {});
-$("f").addEventListener("submit", async e => {
-  e.preventDefault(); $("err").classList.remove("on");
-  const email = $("email").value.trim(), password = $("password").value;
-  if (!email || !password) return fail("Enter your email and password.");
-  $("go").disabled = true;
-  try {
-    const r = await fetch(up ? "/api/auth/signup" : "/api/auth/login", {method:"POST", headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({email, password, name:$("name").value.trim()})});
-    const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong. Try again.");
-    location.href = dest;
-  } catch (err) { fail(err.message); $("go").disabled = false; }
-});
+(() => {
+  document.getElementById("curYear").textContent = new Date().getFullYear();
+
+  const isSignUpPage = location.pathname === "/signup";
+  const params = new URLSearchParams(location.search);
+  const nextParam = params.get("next");
+  const destUrl = nextParam && /^\/(?![\/\\])[^\\\t\r\n]*$/.test(nextParam) ? nextParam : "/app";
+
+  const googleBtn = document.getElementById("googleBtn");
+  googleBtn.href = "/auth/google/start?next=" + encodeURIComponent(destUrl);
+
+  const cardTitle = document.getElementById("cardTitle");
+  const cardSub = document.getElementById("cardSub");
+  const tabSignIn = document.getElementById("tabSignIn");
+  const tabSignUp = document.getElementById("tabSignUp");
+  const signInForm = document.getElementById("signInForm");
+  const signUpForm = document.getElementById("signUpForm");
+  const forgotForm = document.getElementById("forgotForm");
+  const authAlert = document.getElementById("authAlert");
+  const alertText = document.getElementById("alertText");
+  const alertIcon = document.getElementById("alertIcon");
+  const googleBtnText = document.getElementById("googleBtnText");
+
+  function showAlert(msg, isBad = true) {
+    alertText.textContent = msg;
+    authAlert.className = "alert-box " + (isBad ? "bad" : "ok");
+    alertIcon.innerHTML = isBad
+      ? '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>'
+      : '<svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+  }
+  function clearAlert() {
+    authAlert.className = "alert-box";
+    alertText.textContent = "";
+  }
+
+  function setMode(mode) {
+    clearAlert();
+    if (mode === "signup") {
+      document.title = "Create Account · Clips X";
+      cardTitle.textContent = "Create your account";
+      cardSub.textContent = "Start generating viral clips in seconds";
+      googleBtnText.textContent = "Sign up with Google";
+      tabSignUp.classList.add("active");
+      tabSignUp.setAttribute("aria-selected", "true");
+      tabSignIn.classList.remove("active");
+      tabSignIn.setAttribute("aria-selected", "false");
+      signUpForm.hidden = false;
+      signInForm.hidden = true;
+      forgotForm.hidden = true;
+      history.replaceState(null, "", "/signup" + (nextParam ? "?next=" + encodeURIComponent(nextParam) : ""));
+    } else if (mode === "signin") {
+      document.title = "Sign In · Clips X";
+      cardTitle.textContent = "Sign in to Clips X";
+      cardSub.textContent = "Access your AI video clipping studio";
+      googleBtnText.textContent = "Sign in with Google";
+      tabSignIn.classList.add("active");
+      tabSignIn.setAttribute("aria-selected", "true");
+      tabSignUp.classList.remove("active");
+      tabSignUp.setAttribute("aria-selected", "false");
+      signInForm.hidden = false;
+      signUpForm.hidden = true;
+      forgotForm.hidden = true;
+      history.replaceState(null, "", "/login" + (nextParam ? "?next=" + encodeURIComponent(nextParam) : ""));
+    } else if (mode === "forgot") {
+      document.title = "Reset Password · Clips X";
+      cardTitle.textContent = "Reset password";
+      cardSub.textContent = "We'll send you a link to reset your password";
+      signInForm.hidden = true;
+      signUpForm.hidden = true;
+      forgotForm.hidden = false;
+    }
+  }
+
+  tabSignIn.addEventListener("click", () => setMode("signin"));
+  tabSignUp.addEventListener("click", () => setMode("signup"));
+  document.getElementById("promptToSignUp").addEventListener("click", () => setMode("signup"));
+  document.getElementById("promptToSignIn").addEventListener("click", () => setMode("signin"));
+  document.getElementById("linkForgot").addEventListener("click", e => { e.preventDefault(); setMode("forgot"); });
+  document.getElementById("btnBackToLogin").addEventListener("click", () => setMode("signin"));
+
+  // Check URL errors
+  if (params.get("error") === "google") {
+    showAlert("Google sign-in didn't complete. Please try again or use email.", true);
+  }
+
+  // Toggle Password Visibilities
+  document.querySelectorAll(".btn-toggle-pw").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const targetId = btn.getAttribute("data-target");
+      const input = document.getElementById(targetId);
+      if (!input) return;
+      const isPw = input.type === "password";
+      input.type = isPw ? "text" : "password";
+      btn.style.color = isPw ? "var(--amber-600)" : "var(--text-faint)";
+      input.focus();
+    });
+  });
+
+  // Real-time password match validation
+  const pwInput = document.getElementById("signupPassword");
+  const confirmPwInput = document.getElementById("signupConfirmPassword");
+  const matchHint = document.getElementById("pwMatchHint");
+
+  function checkPasswordMatch() {
+    const pw = pwInput.value;
+    const cpw = confirmPwInput.value;
+    if (!cpw) {
+      matchHint.hidden = true;
+      return true;
+    }
+    matchHint.hidden = false;
+    if (pw === cpw) {
+      matchHint.className = "pw-match-hint ok";
+      matchHint.textContent = "✓ Passwords match";
+      return true;
+    } else {
+      matchHint.className = "pw-match-hint bad";
+      matchHint.textContent = "✕ Passwords do not match";
+      return false;
+    }
+  }
+  pwInput.addEventListener("input", checkPasswordMatch);
+  confirmPwInput.addEventListener("input", checkPasswordMatch);
+
+  // Smooth unlock animation and transition
+  function triggerUnlock(redirectUrl) {
+    document.body.classList.add("unlocking");
+    setTimeout(() => {
+      window.location.href = redirectUrl;
+    }, 550);
+  }
+
+  // Handle Sign In Submit
+  signInForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    clearAlert();
+    const email = document.getElementById("loginEmail").value.trim();
+    const password = document.getElementById("loginPassword").value;
+    const btn = document.getElementById("btnSignIn");
+
+    if (!email || !password) {
+      showAlert("Please enter your email and password.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+
+    try {
+      const resp = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(typeof data.detail === "string" ? data.detail : "Invalid email or password.");
+      }
+      showAlert("Welcome back! Loading your studio...", false);
+      triggerUnlock(destUrl);
+    } catch (err) {
+      showAlert(err.message, true);
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    }
+  });
+
+  // Handle Sign Up Submit
+  signUpForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    clearAlert();
+    const name = document.getElementById("signupName").value.trim();
+    const email = document.getElementById("signupEmail").value.trim();
+    const password = document.getElementById("signupPassword").value;
+    const confirmPassword = document.getElementById("signupConfirmPassword").value;
+    const btn = document.getElementById("btnSignUp");
+
+    if (!name) {
+      showAlert("Please enter your name.", true);
+      return;
+    }
+    if (!email) {
+      showAlert("Please enter a valid email address.", true);
+      return;
+    }
+    if (password.length < 8) {
+      showAlert("Password must be at least 8 characters long.", true);
+      return;
+    }
+    if (password !== confirmPassword) {
+      showAlert("Passwords do not match.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+
+    try {
+      const resp = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(typeof data.detail === "string" ? data.detail : "Could not create account. Try another email.");
+      }
+      showAlert("Account created! Unlocking your studio...", false);
+      triggerUnlock(destUrl);
+    } catch (err) {
+      showAlert(err.message, true);
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    }
+  });
+
+  // Handle Forgot Password Submit
+  forgotForm.addEventListener("submit", async e => {
+    e.preventDefault();
+    clearAlert();
+    const email = document.getElementById("forgotEmail").value.trim();
+    const btn = document.getElementById("btnForgot");
+
+    if (!email) {
+      showAlert("Please enter your email.", true);
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add("loading");
+
+    try {
+      const resp = await fetch("/api/auth/forgot", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        throw new Error(typeof data.detail === "string" ? data.detail : "Could not send reset link. Try again later.");
+      }
+      showAlert("If an account exists for that email, a password reset link has been sent.", false);
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    } catch (err) {
+      showAlert(err.message, true);
+      btn.disabled = false;
+      btn.classList.remove("loading");
+    }
+  });
+
+  // Set initial mode from URL
+  if (isSignUpPage) {
+    setMode("signup");
+  } else {
+    setMode("signin");
+  }
+
+  // Check public config (e.g. if Google OAuth is ready)
+  fetch("/api/public").then(r => r.json()).then(cfg => {
+    if (cfg && cfg.google === false) {
+      googleBtn.style.opacity = "0.7";
+      googleBtn.title = "Google OAuth is not configured on this server yet.";
+    }
+  }).catch(() => {});
+
+})();
 </script>
 </body>
 </html>
