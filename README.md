@@ -25,7 +25,8 @@ creator's live stream and clip the highlights while the stream is still running.
 
 ## Quick start
 
-You need Python 3.10 or newer and `ffmpeg` on your PATH.
+You need Python 3.10 or newer and `ffmpeg`. On Windows: `winget install Gyan.FFmpeg`. On a Mac: `brew install ffmpeg`.
+On Linux: `sudo apt install ffmpeg`. PeakCut finds it by itself and tells you in the dashboard if it is missing.
 
 ```bash
 git clone <this repository> clipsx
@@ -39,15 +40,13 @@ cd clipsx
 pip install -r requirements.txt
 ```
 
-Download the speech model once (about 480 MB) and start the server:
-
-```bash
-python -m studio.fetch_model
-```
+Start the server:
 
 ```bash
 python -m studio.server
 ```
+
+The first start downloads the speech model by itself (about 480 MB, once).
 
 Open http://127.0.0.1:8765. There is no sign-in: it opens straight into the dashboard. Go to **Settings, AI**, choose
 your primary AI service (and optional fallback providers), paste your keys, and press **Save and test**.
@@ -134,9 +133,18 @@ Data is kept per user: accounts in the database (SQLite on your own computer, Po
 clips in each user's own folder. [AGENTS.md](AGENTS.md) is a short map of the code for contributors and AI coding
 assistants.
 
+## Where your videos and clips are kept
+
+Everything Clips X keeps is in one folder: videos, clips, recordings, creators, settings and the speech model. By
+default it is the `data` folder inside Clips X. **Settings, Storage** shows the folder and how much room its drive
+has, opens it in one click, and lets you move it to another drive: choose the new folder, and Clips X moves
+everything there the next time it starts. If the drive is nearly full, Clips X says so and stops taking new videos
+until there is room. (`CLIPSX_DATA` in `.env` still works and takes priority.)
+
 ## Updating
 
-Clips X checks GitHub every few hours. When a newer version is out, the dashboard shows a notice with what changed
+Clips X checks GitHub once a minute while it runs. When a newer version is out, the dashboard shows a notice
+within a minute or two (no restart needed), with what changed
 and how to update: ask your AI coding assistant to do it (the notice has a sentence to paste), or run
 `git pull && pip install -r requirements.txt` in the Clips X folder and restart it (with Docker:
 `git pull && docker compose up -d --build`). Your `.env`, keys and clips are not touched. Only the two commit ids
