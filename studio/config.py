@@ -20,7 +20,35 @@ def _load_dotenv():
 
 
 _load_dotenv()
-env = os.environ.get
+
+
+def env(name: str, default: str = None) -> str:
+    """Read an environment variable, supporting CLIPSX_, CLIPS_X_ and PEAKCUT_ prefixes interchangeably."""
+    if name.startswith("PEAKCUT_"):
+        suffix = name[len("PEAKCUT_"):]
+        val = os.environ.get(f"CLIPSX_{suffix}")
+        if val is not None:
+            return val
+        val = os.environ.get(f"CLIPS_X_{suffix}")
+        if val is not None:
+            return val
+    elif name.startswith("CLIPSX_"):
+        suffix = name[len("CLIPSX_"):]
+        val = os.environ.get(name)
+        if val is not None:
+            return val
+        val = os.environ.get(f"CLIPS_X_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}")
+        if val is not None:
+            return val
+    elif name.startswith("CLIPS_X_"):
+        suffix = name[len("CLIPS_X_"):]
+        val = os.environ.get(name)
+        if val is not None:
+            return val
+        val = os.environ.get(f"CLIPSX_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}")
+        if val is not None:
+            return val
+    return os.environ.get(name, default)
 
 
 _kept: dict = {}
@@ -63,7 +91,10 @@ YT_TRANSCRIPT = env("PEAKCUT_YT_TRANSCRIPT", "1") != "0"
 # the compact model for processors; a machine with a graphics card sets PEAKCUT_ASR_MODEL to the full-precision one
 ASR_MODEL_NAME = env("PEAKCUT_ASR_MODEL", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8")
 ASR_MODEL_DIR = MODELS_DIR / ASR_MODEL_NAME
-DATABASE_URL = env("DATABASE_URL") or f"sqlite:///{(DATA_DIR / 'peakcut.db').as_posix()}"
+DATABASE_URL = env("DATABASE_URL") or (
+    f"sqlite:///{(DATA_DIR / 'peakcut.db').as_posix()}" if (DATA_DIR / "peakcut.db").exists() and not (DATA_DIR / "clipsx.db").exists()
+    else f"sqlite:///{(DATA_DIR / 'clipsx.db').as_posix()}"
+)
 
 for d in (USERS_DIR, MODELS_DIR, TMP_DIR, FONTS_DIR):
     d.mkdir(parents=True, exist_ok=True)
@@ -81,17 +112,17 @@ PORT = int(env("PEAKCUT_PORT") or "8765")
 PUBLIC_URL = (env("PEAKCUT_PUBLIC_URL") or f"http://127.0.0.1:{PORT}").rstrip("/")   # e.g. https://peakcut.com
 HTTPS = PUBLIC_URL.startswith("https://")
 SESSION_DAYS = int(env("PEAKCUT_SESSION_DAYS", "30"))
-# Accounts are off by default: PeakCut opens straight into the dashboard, with no sign-in, which is what you want
-# on your own computer. On a server that other people can reach, set PEAKCUT_ACCOUNTS=1: everyone then signs up
+# Accounts are off by default: Clips X opens straight into the dashboard, with no sign-in, which is what you want
+# on your own computer. On a server that other people can reach, set CLIPSX_ACCOUNTS=1: everyone then signs up
 # and signs in, and each person only sees their own videos.
 ACCOUNTS = env("PEAKCUT_ACCOUNTS", "0") == "1"
 # The two buttons along the top of the dashboard: the project's code, and where to follow its maker (feedback goes
 # there too). Set either to an empty value to hide that button, or point them at your own pages in a fork.
-REPO_URL = env("PEAKCUT_REPO_URL", "https://github.com/haziqahmedqasmi/peakcut").strip()
-FOLLOW_URL = env("PEAKCUT_FOLLOW_URL", "https://www.instagram.com/haziq.builds/").strip()
+REPO_URL = env("CLIPSX_REPO_URL", env("PEAKCUT_REPO_URL", "https://github.com/haziqahmedqasmi/peakcut")).strip()
+FOLLOW_URL = env("CLIPSX_FOLLOW_URL", env("PEAKCUT_FOLLOW_URL", "https://www.instagram.com/haziq.builds/")).strip()
 
 # ---------------------------------------------------------------- limits (per user, and for the whole server)
-# Your own PeakCut has no limits unless you set them: 0 (the default) means "none" for every limit below. The
+# Your own Clips X has no limits unless you set them: 0 (the default) means "none" for every limit below. The
 # machine still protects itself: new work waits while the processor, memory or disk are nearly full (load.py).
 _NONE = 10 ** 7                      # what "no limit" becomes: far beyond anything real, and still a plain number
 
@@ -139,7 +170,7 @@ SMTP_PORT = int(env("PEAKCUT_SMTP_PORT", "587"))
 SMTP_USER = env("PEAKCUT_SMTP_USER", "")
 MAIL_FROM = env("PEAKCUT_MAIL_FROM", "")
 CONTACT_EMAIL = env("PEAKCUT_CONTACT_EMAIL", "")
-LEGAL_NAME = env("PEAKCUT_LEGAL_NAME", "")            # the business that runs PeakCut, for the legal pages
+LEGAL_NAME = env("CLIPSX_LEGAL_NAME", env("PEAKCUT_LEGAL_NAME", "Clips X"))            # the business that runs Clips X, for the legal pages
 LEGAL_COUNTRY = env("PEAKCUT_LEGAL_COUNTRY", "")      # whose law applies, for the terms
 # Set to 1 on a public site with email set up: password sign-ups must then confirm their address before clipping.
 VERIFY_EMAIL = env("PEAKCUT_VERIFY_EMAIL", "0") == "1"

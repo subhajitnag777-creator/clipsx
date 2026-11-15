@@ -42,6 +42,9 @@ def fake_post(url, json=None, headers=None, timeout=None, **_k):  # noqa: A002
             return Reply(400, {"error": {"message": "temperature is not supported"}})
         return Reply(200, {"choices": [{"message": {"content": "```json\n" + globals()["json_text"]({"items": [CLIP]}) + "\n```"}}],
                            "usage": {"prompt_tokens": 90, "completion_tokens": 20}})
+    if url.endswith("/responses"):
+        return Reply(200, {"output": [{"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": globals()["json_text"]({"items": [CLIP]})}]}],
+                           "usage": {"input_tokens": 90, "output_tokens": 20}})
     if url.endswith("/messages"):
         return Reply(200, {"content": [{"type": "text", "text": "Here you go: " + globals()["json_text"]({"items": [CLIP]})}],
                            "usage": {"input_tokens": 70, "output_tokens": 10}})
@@ -79,6 +82,16 @@ out, sent, wrote = ai.call("model-a", "hello", brain.SCHEMA)
 check("anthropic: answer found inside a sentence, tokens read", out == [CLIP] and (sent, wrote) == (70, 10), str((out, sent, wrote)))
 check("anthropic: key and version headers", seen[0][2].get("x-api-key") == "test-key-123456" and "anthropic-version" in seen[0][2])
 
+use("agentrouter")
+out, sent, wrote = ai.call("gpt-6.1-sol", "hello", brain.SCHEMA)
+check("agentrouter: uses agentrouter gateway and bearer auth", "agentrouter.org" in seen[0][0] and seen[0][2].get("Authorization") == "Bearer test-key-123456" and out == [CLIP])
+
+use("agentrouter", "https://agentrouter.org")
+out, _s, _w = ai.call("gpt-6.1-sol", "hello", brain.SCHEMA)
+check("agentrouter: base URL normalized with /v1", seen[0][0].startswith("https://agentrouter.org/v1") and out == [CLIP])
+ar_models = ai.list_models("agentrouter")
+check("agentrouter: active models returned even on unauthenticated/error", "gpt-6.1-sol" in ar_models and "gpt-6-astra" in ar_models and "gpt-5.6-sol" in ar_models)
+
 use("custom", "http://127.0.0.1:1234/v1")
 out, _s, _w = ai.call("model-a", "hello", brain.SCHEMA)
 check("custom: uses the address from settings", seen[0][0] == "http://127.0.0.1:1234/v1/chat/completions" and out == [CLIP])
@@ -112,6 +125,62 @@ with ctx.as_user(u1.id):
     check("usage says which AI is set", s["ready"] and s["provider"] == "Gemini" and s["model"] == "model-a")
 with ctx.as_user(u2.id):
     check("another user sees none of it", usage.summary({})["calls_total"] == 0)
+
+# ---- fallback chain: Provider 1 fails with 429, switches to Provider 2 automatically
+orig_post = ai.httpx.post
+orig_sleep = brain.time.sleep
+brain.time.sleep = lambda _: None
+
+def fallback_post(url, json=None, headers=None, **k):
+    if "generateContent" in url:
+        return Reply(429, {"error": {"message": "Resource exhausted"}})
+    return orig_post(url, json=json, headers=headers, **k)
+
+ai.httpx.post = fallback_post
+ai.save_chain([
+    {"provider": "gemini", "models": ["gemini-2.5-flash"], "key": "key1"},
+    {"provider": "openai", "models": ["gpt-4o-mini"], "key": "key2"}
+])
+fallback_out, fallback_model, _tokens = brain.ask_ai("hello", brain.SCHEMA)
+check("fallback chain: switches to secondary provider when primary fails", fallback_out == [CLIP] and fallback_model == "gpt-4o-mini")
+
+# ---- removing old AI and promoting new provider to primary
+ai.save_chain([
+    {"provider": "openai", "models": ["gpt-4o-mini"], "key": "key2"}
+])
+ch = ai.chain()
+check("removing old AI provider: secondary becomes primary", len(ch) == 1 and ch[0]["provider"] == "openai")
+
+# ---- clear saved key
+ai.save_chain([
+    {"provider": "openai", "models": ["gpt-4o-mini"], "clear_key": True, "key": "new-key-789"}
+])
+ch = ai.chain()
+check("updating key with new key", ch[0]["key"] == "new-key-789")
+
+# ---- duplicate provider removal by ID
+ai.save_chain([
+    {"id": "c1", "provider": "agentrouter", "models": ["gpt-6-astra"], "key": "key-ar-1"},
+    {"id": "c2", "provider": "agentrouter", "models": ["gpt-6.1-sol"], "key": "key-ar-2"},
+])
+ch = ai.chain()
+check("two cards of same provider saved with separate keys", len(ch) == 2 and ch[0]["key"] == "key-ar-1" and ch[1]["key"] == "key-ar-2")
+
+# Remove first card, keep second card without re-entering key
+ai.save_chain([
+    {"id": "c2", "provider": "agentrouter", "models": ["gpt-6.1-sol"]}
+])
+ch = ai.chain()
+check("removing card 1 preserves card 2 key by ID", len(ch) == 1 and ch[0]["id"] == "c2" and ch[0]["key"] == "key-ar-2")
+
+# ---- clear all AI
+ai.clear()
+check("clear all AI empties chain", len(ai.chain()) == 0)
+check("test_all on empty chain returns safe error dict", ai.test_all()["ok"] is False)
+
+ai.httpx.post = orig_post
+brain.time.sleep = orig_sleep
+ai.save("gemini", ["model-a", "model-b"], "", "test-key-123456")
 
 print("ALL PASSED" if not fails else f"{len(fails)} failed")
 import shutil  # noqa: E402

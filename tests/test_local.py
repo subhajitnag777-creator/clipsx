@@ -49,6 +49,7 @@ KEY = "test-key-abcdefgh12345678"
 a = c.get("/api/ai").json()
 check("no AI to begin with", (a["ready"], a["has_key"], st["ai"]["ready"]), (False, False, False))
 check("the services are listed", [p["id"] for p in a["providers"]][:3], ["gemini", "openai", "xai"])
+check("agentrouter is in listed services", "agentrouter" in [p["id"] for p in a["providers"]])
 put = lambda body: c.put("/api/ai", json=body, headers=ORIGIN)  # noqa: E731
 check("a service needs its key", put({"provider": "gemini", "models": "model-a"}).status_code, 400)
 check("...and a model", put({"provider": "gemini", "models": "", "key": KEY}).status_code, 400)

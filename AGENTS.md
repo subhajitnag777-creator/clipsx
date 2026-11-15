@@ -1,4 +1,4 @@
-# Working on PeakCut
+# Working on Clips X
 
 A short map for contributors and AI coding assistants.
 
@@ -9,16 +9,16 @@ A short map for contributors and AI coding assistants.
 - Tests: `python tests/run.py`. It starts a throwaway copy on a spare port with an empty data folder. Run it
   before and after any change to `studio/`. No keys needed.
 - To try a risky change by hand without touching real data:
-  `PEAKCUT_DATA=<temp folder> PEAKCUT_PORT=8766 python -m studio.server`.
+  `CLIPSX_DATA=<temp folder> CLIPSX_PORT=8766 python -m studio.server`.
 
 ## Where things are
 
 | File | What it does |
 |---|---|
 | `studio/server.py` | Every web route, and the gate that runs before each request (who is asking, limits, headers) |
-| `studio/config.py` | Every setting, read from environment variables |
-| `studio/ai.py` | The only code that talks to an AI service, and the AI settings saved from the dashboard (`ai.json` in the data folder) |
-| `studio/brain.py` | The prompts: finding clips, live judging, hooks and titles, caption fixes |
+| `studio/config.py` | Every setting, read from environment variables (`CLIPSX_*`, with fallback to `PEAKCUT_*`) |
+| `studio/ai.py` | The code that talks to AI services, multi-provider fallback chains, AgentRouter, and settings saved in `ai.json` |
+| `studio/brain.py` | The prompts: finding clips, live judging, hooks and titles, caption fixes, multi-provider auto fallback |
 | `studio/usage.py` | The record of AI calls and tokens shown on the AI usage page |
 | `studio/jobs.py` | The video pipeline and the fair queue |
 | `studio/live.py` | Live recording and clipping |
@@ -32,7 +32,7 @@ A short map for contributors and AI coding assistants.
 ## Rules worth knowing
 
 - **Sign-in is off by default** (`config.ACCOUNTS`): every request then belongs to one built-in owner
-  (`auth.local_user()`). With `PEAKCUT_ACCOUNTS=1` it is a normal multi-user site. Both paths are tested.
+  (`auth.local_user()`). With `CLIPSX_ACCOUNTS=1` it is a normal multi-user site. Both paths are tested.
 - **Who is asking** always comes from the session (`ctx.uid()`), never from the request body. Background threads
   set it themselves with `ctx.as_user(...)`.
 - **Anything that changes what a user sees must call `ctx.bump()`**. The page polls `/api/sync`, which answers
@@ -40,6 +40,8 @@ A short map for contributors and AI coding assistants.
 - **Text from videos is untrusted**: it goes into prompts through `brain._safe` and out through `brain._text`.
 - **Adding an AI provider**: add a row to `PROVIDERS` in `studio/ai.py`. If it speaks the OpenAI chat format that
   is all; otherwise add one function that returns `(parsed JSON, tokens in, tokens out)`.
+- **Multi-provider fallback**: `ai.chain()` returns the ordered list of configured providers. `brain.ask_ai()`
+  tries each provider in sequence. If provider 1 hits quota limits or rate limits (429), it automatically falls back to provider 2.
 - **Clips are rendered in a short temporary folder** and moved into place (`render.render_clip`): ffmpeg's caption
   step cannot open paths longer than 260 characters on Windows.
 - **Secrets** are read from the environment or from files named by `*_FILE` settings. Never write a key, a real

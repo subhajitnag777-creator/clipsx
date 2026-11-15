@@ -1,4 +1,4 @@
-"""PeakCut web server. Run with:  python -m studio.server
+"""Clips X web server. Run with:  python -m studio.server
 
 Public pages:  /  /login  /signup          The app:  /app  (signed-in users only)
 Everything under /api, /media and /oauth needs a session, except /api/auth/* and /api/public."""
@@ -24,7 +24,7 @@ from . import account, load
 from . import (accounts, ai, alerts, auth, config, creators, ctx, db, jobs, live, media, posting,
                profiles, render, safe, transcribe, usage)
 
-app = FastAPI(title="PeakCut", docs_url=None, redoc_url=None, openapi_url=None)
+app = FastAPI(title="Clips X", docs_url=None, redoc_url=None, openapi_url=None)
 WEB = config.ROOT / "web"
 OPEN = ("/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "/brand/", "/assets/", "/healthz", "/favicon.ico", "/robots.txt", "/sitemap.xml")
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
@@ -106,7 +106,7 @@ class Gate:
         is_open = path in PAGES or any(path.startswith(p) for p in OPEN)
         admin_area = path == "/admin" or path.startswith(("/admin/", "/api/admin/"))
         if config.ACCOUNTS:
-            cookie = req.cookies.get(auth.COOKIE, "")
+            cookie = req.cookies.get(auth.COOKIE, "") or req.cookies.get("peakcut_session", "")
             user = auth._sess.get(auth._h(cookie)) if cookie and not admin_area else None      # remembered: no database, no thread hop
             user = user[1] if user and time.time() - user[0] < auth.SESS_FOR else (
                 await run_in_threadpool(auth.user_for, cookie, admin_area) if cookie else None)
@@ -115,7 +115,7 @@ class Gate:
             # must have been asked for by its real address (a number, "localhost", or the address in settings),
             # so another website cannot reach it through a made-up name that points at this machine.
             if not _own_address(req.headers.get("host", "")):
-                return await deny(403, "Open PeakCut by its own address.")
+                return await deny(403, "Open Clips X by its own address.")
             if path == "/" or path == "/reset" or path.startswith("/auth/"):
                 return await deny(303, "", redirect="/app")
             if path.startswith("/api/auth/") and path != "/api/auth/me":
@@ -331,9 +331,9 @@ def reset_page():
 
 
 LEGAL = {
-    "privacy": ("Privacy Policy", "How PeakCut collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
-    "terms": ("Terms of Service", "The terms for using PeakCut, the AI clipping tool for streams and videos: accounts, availability and liability."),
-    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with PeakCut, the AI stream clipping tool."),
+    "privacy": ("Privacy Policy", "How Clips X collects, uses and protects your data, including Google user data, cookies and your privacy rights."),
+    "terms": ("Terms of Service", "The terms for using Clips X, the AI clipping tool for streams and videos: accounts, availability and liability."),
+    "acceptable-use": ("Acceptable Use Policy", "What you may and may not do with Clips X, the AI stream clipping tool."),
 }
 
 
@@ -348,9 +348,9 @@ def legal_page(request: Request):
     contact = config.CONTACT_EMAIL
     who = (f'<a href="mailto:{_h.escape(contact)}">{_h.escape(contact)}</a>' if contact
            else "the contact details on our website")
-    name = _h.escape(config.LEGAL_NAME or "PeakCut")
+    name = _h.escape(config.LEGAL_NAME or "Clips X")
     law = (f"the laws of {_h.escape(config.LEGAL_COUNTRY)}" if config.LEGAL_COUNTRY
-           else "the laws of the country where PeakCut's operator is established")
+           else "the laws of the country where Clips X's operator is established")
     out = (_LEGAL_HTML or (WEB / "legal.html").read_text(encoding="utf-8"))
     for k, v in {"{{CONTACT}}": who, "{{PAGE}}": page, "{{PAGE_PATH}}": page, "{{SITE}}": _h.escape(config.PUBLIC_URL),
                  "{{NAME}}": name, "{{LAW}}": law, "{{TITLE}}": title, "{{DESC}}": desc}.items():
@@ -386,7 +386,7 @@ def healthz():
 def brand(name: str):
     if not re.fullmatch(r"[\w\-]+\.(svg|png|ico|webp|jpg|mp4)", name) or not (WEB / "brand" / name).is_file():
         raise HTTPException(404)
-    return FileResponse(WEB / "brand" / name, headers={"Cache-Control": "public, max-age=604800, stale-while-revalidate=86400"})
+    return FileResponse(WEB / "brand" / name, headers={"Cache-Control": "public, max-age=60, stale-while-revalidate=60"})
 
 
 @app.get("/assets/{name}")
@@ -488,9 +488,10 @@ def login(request: Request, body: dict = Body(...)):
 
 @app.post("/api/auth/logout")
 def logout(request: Request):
-    auth.end_session(request.cookies.get(auth.COOKIE, ""))
+    auth.end_session(request.cookies.get(auth.COOKIE, "") or request.cookies.get("peakcut_session", ""))
     resp = JSONResponse({"ok": True})
     resp.delete_cookie(auth.COOKIE, path="/")
+    resp.delete_cookie("peakcut_session", path="/")
     return resp
 
 
@@ -568,7 +569,7 @@ _disk: dict = {}
 def _quota():
     """Each account has a fixed amount of disk space. Measured at most once a minute."""
     if load.disk_full():
-        raise HTTPException(503, "PeakCut is out of space for new videos for the moment. Please try again shortly.")
+        raise HTTPException(503, "Clips X is out of space for new videos for the moment. Please try again shortly.")
     uid = ctx.uid()
     got = _disk.get(uid)
     if not got or time.time() - got[0] > 60:
@@ -953,7 +954,7 @@ def clips_zip(ids: str = ""):
     except ValueError as e:
         raise HTTPException(400, str(e))
     from starlette.background import BackgroundTask
-    return FileResponse(f, filename=f"peakcut-clips-{len(pairs)}.zip", media_type="application/zip",
+    return FileResponse(f, filename=f"clipsx-clips-{len(pairs)}.zip", media_type="application/zip",
                         headers={"Cache-Control": "private, no-store"}, background=BackgroundTask(lambda: f.unlink(missing_ok=True)))
 
 
@@ -1017,7 +1018,7 @@ def email_preview(request: Request, kind: str = "verify"):
     from . import mailer
     _admin(request)
     if kind == "reset":
-        page = mailer.preview("Reset your password", "Someone asked to reset the password for this PeakCut account. If that was you, choose a new one below.",
+        page = mailer.preview("Reset your password", "Someone asked to reset the password for this Clips X account. If that was you, choose a new one below.",
                               "Choose a new password", config.PUBLIC_URL + "/reset?t=example",
                               "The link works for one hour. If you didn't ask for this, ignore this email and your password stays the same.")
     else:
@@ -1031,10 +1032,10 @@ def test_email(request: Request):
     from . import mailer
     me_ = _admin(request)
     if not mailer.ready():
-        raise HTTPException(400, "No email service is set up yet. Add the PEAKCUT_SMTP settings to .env first.")
-    mailer.send(me_.email, "PeakCut test email", "Your emails are working",
-                "This is a test from your PeakCut server. Account emails like this one will now reach people.",
-                "Open PeakCut", config.PUBLIC_URL + "/app", "You can ignore this message.")
+        raise HTTPException(400, "No email service is set up yet. Add the CLIPSX_SMTP settings to .env first.")
+    mailer.send(me_.email, "Clips X test email", "Your emails are working",
+                "This is a test from your Clips X server. Account emails like this one will now reach people.",
+                "Open Clips X", config.PUBLIC_URL + "/app", "You can ignore this message.")
     return {"sent_to": me_.email}
 
 
@@ -1224,15 +1225,43 @@ def ai_get(request: Request):
     return ai.public()
 
 
+@app.get("/api/ai/reveal")
+def ai_reveal(request: Request, idx: int = 0, id: str = ""):
+    _admin(request)
+    ch = ai.chain()
+    matched = None
+    if id:
+        matched = next((c for c in ch if c.get("id") == id), None)
+    if matched is None and 0 <= idx < len(ch):
+        matched = ch[idx]
+    if not matched:
+        return {"key": ""}
+    return {"key": matched.get("key", "")}
+
+
 @app.put("/api/ai")
 def ai_put(request: Request, body: dict = Body(...)):
     _admin(request)
-    k = body.get("key")
     try:
-        out = ai.save(body.get("provider"), body.get("models"), body.get("base_url") or "",
-                      None if k is None or (isinstance(k, str) and not k.strip() and not body.get("remove_key")) else str(k))
+        if body.get("clear"):
+            out = ai.clear()
+        elif "chain" in body and isinstance(body.get("chain"), list):
+            out = ai.save_chain(body["chain"])
+        else:
+            k = body.get("key")
+            out = ai.save(body.get("provider"), body.get("models"), body.get("base_url") or "",
+                          None if k is None or (isinstance(k, str) and not k.strip() and not body.get("remove_key")) else str(k))
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e))
+    usage.forget_all()
+    ctx.bump()
+    return out
+
+
+@app.delete("/api/ai")
+def ai_delete(request: Request):
+    _admin(request)
+    out = ai.clear()
     usage.forget_all()
     ctx.bump()
     return out
@@ -1243,7 +1272,7 @@ def ai_models(request: Request, body: dict = Body(default={})):
     _admin(request)
     _throttle("aimodels:" + ctx.uid(), 30, 600)
     try:
-        return {"models": ai.list_models(body.get("provider"), body.get("base_url"), body.get("key"))}
+        return {"models": ai.list_models(body.get("provider"), body.get("base_url"), body.get("key"), item_id=body.get("id"), idx=body.get("idx"))}
     except ValueError as e:
         raise HTTPException(400, str(e))
     except Exception as e:  # noqa: BLE001
@@ -1251,10 +1280,12 @@ def ai_models(request: Request, body: dict = Body(default={})):
 
 
 @app.post("/api/ai/test")
-def ai_test(request: Request):
+def ai_test(request: Request, body: dict = Body(default={})):
     _admin(request)
     _throttle("aitest:" + ctx.uid(), 20, 600)
     try:
+        if body.get("all"):
+            return ai.test_all()
         return ai.test()
     except ValueError as e:
         raise HTTPException(400, str(e))
@@ -1394,7 +1425,7 @@ def test_alert():
         auth_problem = str(e)
     if auth_problem:
         raise HTTPException(429, auth_problem)
-    problems = alerts.send("PeakCut: test message. Alerts are working.")
+    problems = alerts.send("Clips X: test message. Alerts are working.")
     if problems:
         raise HTTPException(400, "; ".join(problems))
     return {"ok": True}
@@ -1452,10 +1483,10 @@ def admin_delete_user(request: Request, uid: str, body: dict = Body(...)):
 
 
 def main():
-    print(f"\n  PeakCut is running:  {config.PUBLIC_URL}\n")
+    print(f"\n  Clips X is running:  {config.PUBLIC_URL}\n")
     if not config.ACCOUNTS and (config.HTTPS or config.HOST not in ("127.0.0.1", "localhost", "::1")):
-        print("  Sign-in is off, so anyone who can reach this address can use PeakCut and its AI key.\n"
-              "  On a server other people can reach, set PEAKCUT_ACCOUNTS=1 in .env.\n", flush=True)
+        print("  Sign-in is off, so anyone who can reach this address can use Clips X and its AI key.\n"
+              "  On a server other people can reach, set CLIPSX_ACCOUNTS=1 in .env.\n", flush=True)
     if config.env("PEAKCUT_AUTO_RELOAD") == "1":
         # restart by itself whenever the server code changes (pages in web/ never need a restart)
         uvicorn.run("studio.server:app", host=config.HOST, port=config.PORT, log_level="warning", backlog=4096, reload=True,

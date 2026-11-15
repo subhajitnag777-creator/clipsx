@@ -51,7 +51,7 @@ check("two newer commits are found", (got["behind"], got["latest"], got["current
 check("newest change first, one line each, with its date", [(n["title"], n["date"]) for n in got["notes"]],
       [("Captions always in English", "2026-11-16"), ("Connect TikTok in one click", "2026-11-15")])
 check("GitHub is asked for exactly this commit against the branch", asked[-1][0], f"https://api.github.com/repos/{updates.REPO}/compare/{here}...main")
-check("nothing about this server is sent", set(asked[-1][1]) <= {"Accept", "User-Agent"} and "PeakCut" in asked[-1][1]["User-Agent"])
+check("nothing about this server is sent", set(asked[-1][1]) <= {"Accept", "User-Agent"} and ("ClipsX" in asked[-1][1]["User-Agent"] or "PeakCut" in asked[-1][1]["User-Agent"]))
 asked.clear()
 check("the answer is kept: GitHub is not asked again for hours", (updates.check(), len(asked)), (got, 0))
 answer["now"] = R(200, {"ahead_by": 0, "commits": []})

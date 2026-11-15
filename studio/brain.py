@@ -164,23 +164,28 @@ def loud_zscore(db):
 
 
 def ask_ai(prompt, schema=None, purpose="AI call"):
-    """Try each model in order, with a couple of retries for rate limits and overloads.
+    """Try each provider in the fallback chain in order, with each provider trying its models.
+    If provider 1 (e.g. Gemini) fails or is off, switches to provider 2 (e.g. OpenAI), then provider 3, etc.
     Returns (the answer, the model that gave it, tokens used) and notes the tokens in the usage record."""
     if not config.ai_ready():
         raise RuntimeError("The AI is not set up on this server.")
+    providers = [c for c in ai.chain() if c["ready"]]
+    if not providers:
+        raise RuntimeError("No AI service is ready on this server.")
     last = None
-    for model in ai.models():
-        for attempt in range(3):
-            try:
-                out, sent, wrote = ai.call(model, prompt, schema or SCHEMA)
-                usage.record(sent, wrote, purpose)
-                return out, model, sent + wrote
-            except Exception as e:  # noqa: BLE001
-                last = e
-                if "HTTP 429" in str(e) or "HTTP 5" in str(e):
-                    time.sleep(4 * (attempt + 1))
-                    continue
-                break
+    for cfg in providers:
+        for model in cfg.get("models", []):
+            for attempt in range(2):
+                try:
+                    out, sent, wrote = ai.call(model, prompt, schema or SCHEMA, cfg=cfg)
+                    usage.record(sent, wrote, purpose)
+                    return out, model, sent + wrote
+                except Exception as e:  # noqa: BLE001
+                    last = e
+                    if "HTTP 429" in str(e) or "HTTP 5" in str(e):
+                        time.sleep(2 * (attempt + 1))
+                        continue
+                    break
     raise RuntimeError(f"The AI did not answer: {last}")
 
 

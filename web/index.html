@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PeakCut</title>
+<title>Clips X</title>
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -375,10 +375,10 @@ img.av{object-fit:cover}
 .nstep input::-webkit-inner-spin-button,.nstep input::-webkit-outer-spin-button,.range input::-webkit-inner-spin-button,.range input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
 .nstep .ctl i{font-style:normal;font-size:12px;color:var(--faint);width:10px}
 .tiles3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.tile-o{display:flex;flex-direction:column;gap:7px;padding:6px 6px 8px;border:0;border-radius:10px;background:#fff;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:background-color .15s ease,color .15s ease}
+.tile-o{display:flex;flex-direction:column;gap:7px;padding:6px 6px 8px;border:2px solid transparent;border-radius:10px;background:#fff;color:var(--dim);font-size:12px;font-weight:600;cursor:pointer;text-align:center;transition:all .15s ease}
 .composer.compact .tile-o{background:var(--muted)}
-.tile-o:hover,.tile-o:focus-visible{background:#EDE3DB;color:var(--text)}
-.tile-o[aria-pressed=true]{background:var(--brand-soft);color:var(--brand-ink)}
+.tile-o:hover,.tile-o:focus-visible,.composer.compact .tile-o:hover{background:#EDE3DB!important;color:var(--text)!important}
+.tile-o[aria-pressed=true],.composer.compact .tile-o[aria-pressed=true]{background:var(--brand-soft)!important;color:var(--brand-ink)!important;border-color:var(--brand)!important;box-shadow:0 0 0 1px var(--brand)!important}
 .cap-prev{height:54px;border-radius:7px;background:#1E1612;display:flex;align-items:center;justify-content:center;white-space:nowrap;overflow:hidden;font-size:14px;line-height:1;color:#fff;letter-spacing:0;-webkit-text-stroke:1px #000;paint-order:stroke fill}
 .cap-prev b{font-weight:inherit}
 .lay-prev{height:54px;border-radius:7px;background:#1E1612;display:grid;place-items:center}
@@ -389,11 +389,11 @@ img.av{object-fit:cover}
 .lay-prev.crop .ph i{left:0;right:0;top:0;height:100%;transform:none}
 .seg{display:flex;gap:4px;background:#fff;border-radius:10px;padding:4px}
 .composer.compact .seg{background:var(--muted)}
-.seg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 6px;border:0;border-radius:7px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:background-color .15s ease,color .15s ease}
+.seg button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 6px;border:2px solid transparent;border-radius:7px;background:transparent;color:var(--dim);font-size:13px;font-weight:600;cursor:pointer;transition:all .15s ease}
 .seg button small{font-size:11px;font-weight:500;color:var(--faint);transition:color .15s ease}
 .seg button:hover,.seg button:focus-visible{background:#EDE3DB;color:var(--text)}
-.seg button[aria-pressed=true]{background:var(--brand-soft);color:var(--brand-ink)}
-.seg button[aria-pressed=true] small{color:#B8693A}
+.seg button[aria-pressed=true],.composer.compact .seg button[aria-pressed=true]{background:var(--brand-soft)!important;color:var(--brand-ink)!important;border-color:var(--brand)!important;box-shadow:0 0 0 1px var(--brand)!important}
+.seg button[aria-pressed=true] small{color:#B8693A!important}
 .range{display:flex;align-items:center;gap:8px}
 .range label{flex:1;display:flex;align-items:center;gap:6px;background:#fff;border-radius:10px;padding:0 10px;height:44px;font-size:12px;color:var(--faint);min-width:0}
 .composer.compact .range label{background:var(--muted)}
@@ -805,7 +805,7 @@ dialog[open]{animation:fadein .16s ease}
 <body>
 <div class="app" id="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg" alt="PeakCut"><img class="mark" src="/brand/favicon.svg" alt="PeakCut">
+    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=clipsx" alt="Clips X"><img class="mark" src="/brand/favicon.svg?v=clipsx" alt="Clips X">
       <button class="icon-btn collapse" data-act="collapse" id="collapseBtn" aria-label="Collapse sidebar"></button></div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-foot" id="foot"></div>
@@ -863,6 +863,7 @@ const I = {
  "clock": "<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm64-88a8,8,0,0,1-8,8H128a8,8,0,0,1-8-8V72a8,8,0,0,1,16,0v48h48A8,8,0,0,1,192,128Z\"/>",
  "warn": "<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm-8-80V80a8,8,0,0,1,16,0v56a8,8,0,0,1-16,0Zm20,36a12,12,0,1,1-12-12A12,12,0,0,1,140,172Z\"/>",
  "eye": "<path d=\"M247.31,124.76c-.35-.79-8.82-19.58-27.65-38.41C194.57,61.26,162.88,48,128,48S61.43,61.26,36.34,86.35C17.51,105.18,9,124,8.69,124.76a8,8,0,0,0,0,6.5c.35.79,8.82,19.57,27.65,38.4C61.43,194.74,93.12,208,128,208s66.57-13.26,91.66-38.34c18.83-18.83,27.3-37.61,27.65-38.4A8,8,0,0,0,247.31,124.76ZM128,192c-30.78,0-57.67-11.19-79.93-33.25A133.47,133.47,0,0,1,25,128,133.33,133.33,0,0,1,48.07,97.25C70.33,75.19,97.22,64,128,64s57.67,11.19,79.93,33.25A133.46,133.46,0,0,1,231.05,128C223.84,141.46,192.43,192,128,192Zm0-112a48,48,0,1,0,48,48A48.05,48.05,0,0,0,128,80Zm0,80a32,32,0,1,1,32-32A32,32,0,0,1,128,160Z\"/>",
+ "eye_slash": "<path d=\"M53.92,34.62A8,8,0,1,0,42.08,45.38l21.2,23.32A133.15,133.15,0,0,0,25,128a133.33,133.33,0,0,0,23.07,30.75C70.33,180.81,97.22,192,128,192a114.7,114.7,0,0,0,38.25-6.49l35.83,39.41a8,8,0,1,0,11.84-10.76ZM128,176c-27.46,0-51.52-10-71.55-29.69A117.82,117.82,0,0,1,39.69,128a117.75,117.75,0,0,1,16.76-18.31l18.4,20.24A48,48,0,0,0,142.1,160.77l15.11,16.62A98.92,98.92,0,0,1,128,176Zm-16-48a32,32,0,0,1,32,32l-32-32Zm95.31-41.65a8,8,0,0,0-11.23,1.47,117.47,117.47,0,0,1,19.23,40.18,117.75,117.75,0,0,1-16.76,18.31l-12.22-13.44A48.07,48.07,0,0,0,113.88,85.27L99.77,69.75A114.7,114.7,0,0,1,128,64c30.78,0,57.67,11.19,79.93,33.25a133.47,133.47,0,0,1,23.12,30.75,8,8,0,0,0,14.18-7.39A149.33,149.33,0,0,0,207.31,86.35Z\"/>",
  "money": "<path d=\"M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24Zm0,192a88,88,0,1,1,88-88A88.1,88.1,0,0,1,128,216Zm40-68a28,28,0,0,1-28,28h-4v8a8,8,0,0,1-16,0v-8H104a8,8,0,0,1,0-16h36a12,12,0,0,0,0-24H116a28,28,0,0,1,0-56h4V72a8,8,0,0,1,16,0v8h16a8,8,0,0,1,0,16H116a12,12,0,0,0,0,24h24A28,28,0,0,1,168,148Z\"/>",
  "video": "<path d=\"M251.77,73a8,8,0,0,0-8.21.39L208,97.05V72a16,16,0,0,0-16-16H32A16,16,0,0,0,16,72V184a16,16,0,0,0,16,16H192a16,16,0,0,0,16-16V159l35.56,23.71A8,8,0,0,0,248,184a8,8,0,0,0,8-8V80A8,8,0,0,0,251.77,73ZM192,184H32V72H192V184Zm48-22.95-32-21.33V116.28L240,95Z\"/>",
  "crown": "<path d=\"M230.9,73.6A15.85,15.85,0,0,0,212,77.39l-33.67,36.29-35.8-80.29a1,1,0,0,1,0-.1,16,16,0,0,0-29.06,0,1,1,0,0,1,0,.1l-35.8,80.29L44,77.39A16,16,0,0,0,16.25,90.81c0,.11,0,.21.07.32L39,195a16,16,0,0,0,15.72,13H201.29A16,16,0,0,0,217,195L239.68,91.13c0-.11,0-.21.07-.32A15.85,15.85,0,0,0,230.9,73.6ZM201.35,191.68l-.06.32H54.71l-.06-.32L32,88l.14.16,42,45.24a8,8,0,0,0,13.18-2.18L128,40l40.69,91.25a8,8,0,0,0,13.18,2.18l42-45.24L224,88Z\"/>",
@@ -926,15 +927,15 @@ function startTour() {
   if (S.view !== "overview") go("overview");
   // sel: what the step points at.  side: it lives in the sidebar (opened for the step on phones).  dock: where the card sits on phones.
   const steps = [
-    {t: "Welcome to PeakCut", x: "Long videos and live streams go in, captioned vertical clips come out. Here is a quick look around.",
+    {t: "Welcome to Clips X", x: "Long videos and live streams go in, captioned vertical clips come out. Here is a quick look around.",
      chips: [["link", "Paste a link"], ["scissors", "Get clips", 1], ["radio", "Live streams"], ["send", "Post them"]]},
-    {t: "Start with any video", x: "Paste a YouTube, Twitch or Kick link here, or upload a file. PeakCut finds the best moments and makes each one a short with captions.",
+    {t: "Start with any video", x: "Paste a YouTube, Twitch or Kick link here, or upload a file. Clips X finds the best moments and makes each one a short with captions.",
      sel: "#addform", dock: "bottom", chips: [["link", "YouTube"], ["link", "Twitch"], ["link", "Kick"], ["up", "Upload", 1]]},
     {t: "Your day at a glance", x: "Home shows what is recording, how many clips were made and posted today, and what is waiting to go out.",
      sel: "#ov .tiles", dock: "bottom", chips: [["radio", "Recording"], ["scissors", "Clips today", 1], ["send", "Posted"], ["clock", "Waiting"]]},
     {t: "Every video in one place", x: "All videos lists everything you have processed. Open a video to see its clips, trim them, change the captions or download them.",
      sel: '#nav [data-v="library"]', side: 1, dock: "bottom", chips: [["film", "All videos", 1], ["play", "Preview"], ["sliders", "Edit"], ["down", "Download"]]},
-    {t: "Add the creators you clip", x: "Give each creator a workspace with their channels. PeakCut can record them when they go live and clip the highlights as they happen.",
+    {t: "Add the creators you clip", x: "Give each creator a workspace with their channels. Clips X can record them when they go live and clip the highlights as they happen.",
      sel: '#nav [data-act="newcreator"]', side: 1, dock: "bottom", chips: [["plusc", "New creator", 1], ["radio", "Record live"], ["bolt", "Clip highlights"]]},
     {t: "The AI picks the moments", x: "This shows which AI this server uses and how much it has worked today. Open it to see what the AI was used for.",
      sel: "#foot .ai-card", side: 1, dock: "top", chips: [["bolt", "AI", 1], ["chart", "See usage"]]},
@@ -1090,7 +1091,7 @@ function drawStream() {
     pl.dataset.src = src;
     const ipHost = /^[\d.]+$|^\[/.test(location.hostname);
     pl.innerHTML = k === "twitch" && ipHost
-      ? `<div class="noembed">${platLogo(k)}<b>Twitch only plays inside sites with a web address</b><span>It will play here once PeakCut is on its domain, or open PeakCut at localhost instead of ${esc(location.hostname)}.</span><a class="btn sm" href="${esc(p.channel)}" target="_blank" rel="noopener">Watch on Twitch ${ic("upright")}</a></div>`
+      ? `<div class="noembed">${platLogo(k)}<b>Twitch only plays inside sites with a web address</b><span>It will play here once Clips X is on its domain, or open Clips X at localhost instead of ${esc(location.hostname)}.</span><a class="btn sm" href="${esc(p.channel)}" target="_blank" rel="noopener">Watch on Twitch ${ic("upright")}</a></div>`
       : src ? `<iframe src="${src}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen title="${PLAT[k].name} live stream"></iframe>` : "";
   }
   const stats = [p.viewers != null ? [fmtK(p.viewers), "watching"] : null, p.started ? [since(p.started), "live for"] : null,
@@ -1102,7 +1103,7 @@ function drawStream() {
     ${stats.length ? `<div class="sstats">${stats.map(([v, l]) => `<div><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join("")}</div>` : ""}
     <div class="cta">${rec
       ? `<button class="btn danger" data-act="stoplive" data-j="${esc(rec)}">${ic("stop")}Stop recording</button><small>Recording now. Clips appear below as they're made.</small>`
-      : `<button class="btn primary" data-act="golive" data-url="${esc(p.channel)}"><span class="rdot"></span>Record this stream</button><small>PeakCut watches it and clips the best moments as they happen.</small>`}</div>`);
+      : `<button class="btn primary" data-act="golive" data-url="${esc(p.channel)}"><span class="rdot"></span>Record this stream</button><small>Clips X watches it and clips the best moments as they happen.</small>`}</div>`);
 }
 function liveOn(c) { return Object.entries(c.profiles || {}).filter(([k, p]) => p.live && c.channels?.[k] === p.channel).sort(([, p]) => p.channel === c.channel ? -1 : 1); }
 function statusBadge(c) {
@@ -1209,16 +1210,16 @@ async function openFeedback(kind = "bug", context = "") {
 }
 function updateHow() {
   const up = S.status?.update, d = $("#formdlg"); if (!up || d.open) return;
-  const ai = "Update this PeakCut folder to the latest version from GitHub (git pull), keep my .env and data folder as they are, install any new requirements, and restart PeakCut.";
+  const ai = "Update this Clips X folder to the latest version from GitHub (git pull), keep my .env and data folder as they are, install any new requirements, and restart Clips X.";
   const cmd = (label, text) => `<h3>${label}</h3><div class="cmd"><code>${esc(text)}</code><button class="btn sm" type="button" data-act="copytext" data-t="${esc(text)}">${ic("copy")}Copy</button></div>`;
-  d.innerHTML = `<form method="dialog" class="dlg upd"><h2>A new version of PeakCut is out</h2>
+  d.innerHTML = `<form method="dialog" class="dlg upd"><h2>A new version of Clips X is out</h2>
     <p class="help">You're on <b>${esc(up.current)}</b>. ${up.behind} update${up.behind === 1 ? " has" : "s have"} been added since. Your settings, keys and clips stay as they are.</p>
     ${up.notes.length ? `<ul>${up.notes.map(n => `<li>${esc(n.title)} <small>${esc(n.date)}</small></li>`).join("")}</ul>` : ""}
     ${cmd("Ask your AI coding assistant (Claude, Cursor, Copilot...)", ai)}
-    ${cmd("Or run it yourself, in the PeakCut folder", "git pull && pip install -r requirements.txt")}
-    <p class="sub">Then stop PeakCut and start it again. With Docker, run <code>git pull && docker compose up -d --build</code> instead. <a class="lnk" href="${esc(up.url)}" target="_blank" rel="noopener">See every change on GitHub</a></p>
+    ${cmd("Or run it yourself, in the Clips X folder", "git pull && pip install -r requirements.txt")}
+    <p class="sub">Then stop Clips X and start it again. With Docker, run <code>git pull && docker compose up -d --build</code> instead. <a class="lnk" href="${esc(up.url)}" target="_blank" rel="noopener">See every change on GitHub</a></p>
     <div class="dlg-foot"><button class="btn" value="later">Remind me next version</button><button class="btn primary" value="ok" autofocus>Got it</button></div></form>`;
-  d.onclose = () => { if (d.returnValue === "later") { try { localStorage.setItem("peakcut_update_seen", up.latest); } catch {} drawShell(); } };
+  d.onclose = () => { if (d.returnValue === "later") { try { localStorage.setItem("clipsx_update_seen", up.latest); localStorage.setItem("peakcut_update_seen", up.latest); } catch {} drawShell(); } };
   d.returnValue = "ok"; d.showModal();
 }
 function greeting() { const h = new Date().getHours(); return h < 12 ? "Good morning" : h < 18 ? "Good afternoon" : "Good evening"; }
@@ -1273,15 +1274,15 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   }
   if (S.view === "overview" || S.view === "library") {
     const L = S.status.links || {};
-    act = (L.repo ? `<a class="btn" href="${esc(L.repo)}" target="_blank" rel="noopener" title="Star PeakCut on GitHub">${ic("github")}<span>Star<span class="long"> on GitHub</span></span></a>` : "")
-        + (L.follow ? `<a class="btn primary" href="${esc(L.follow)}" target="_blank" rel="noopener" title="Follow the maker of PeakCut on Instagram">${ic("instagram")}Follow me</a>` : "");
+    act = (L.repo ? `<a class="btn" href="${esc(L.repo)}" target="_blank" rel="noopener" title="Star Clips X on GitHub">${ic("github")}<span>Star<span class="long"> on GitHub</span></span></a>` : "")
+        + (L.follow ? `<a class="btn primary" href="${esc(L.follow)}" target="_blank" rel="noopener" title="Follow the maker of Clips X on Instagram">${ic("instagram")}Follow me</a>` : "");
   }
   const me = S.status.user;
   const kk = S.status.ai;
   const up = S.status.update;
   let upSeen = "";
-  try { upSeen = localStorage.getItem("peakcut_update_seen") || ""; } catch {}
-  const upBar = up && up.latest !== upSeen ? `<div class="vb" role="status">${ic("up")}<span>A new version of PeakCut is out: <b>${up.behind} update${up.behind === 1 ? "" : "s"}</b> since yours.</span>
+  try { upSeen = localStorage.getItem("clipsx_update_seen") || localStorage.getItem("peakcut_update_seen") || ""; } catch {}
+  const upBar = up && up.latest !== upSeen ? `<div class="vb" role="status">${ic("up")}<span>A new version of Clips X is out: <b>${up.behind} update${up.behind === 1 ? "" : "s"}</b> since yours.</span>
     <button class="btn sm primary" data-act="updhow">How to update</button><button class="btn sm ghost" data-act="updlater" aria-label="Hide until the next version">Later</button></div>` : "";
   put($("#vbanner"), upBar ? upBar : me && me.verified === false ? `<div class="vb" role="status">${ic("warn")}<span>Confirm your email to start clipping. We sent a link to <b>${esc(me.email)}</b>.</span><button class="btn sm" data-act="resendverify">Send a new link</button></div>`
     : kk && kk.ready === false && S.view !== "usage" ? `<div class="vb" role="status">${ic("bolt")}<span>${me?.is_admin ? "Add your AI key to let the AI pick clips and write titles. Until then, clips are picked by loudness." : "The AI isn't set up on this server yet, so clips are picked by loudness."}</span>${me?.is_admin && S.view !== "settings" ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">${ic("plus")}Add AI key</button>` : ""}</div>` : "");
@@ -1344,32 +1345,64 @@ function setTab(t) {
 }
 
 /* ============================================================ add bar */
+function getComposerOpts(c) {
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem("clipsx_opts") || "{}"); } catch {}
+  return {
+    style: saved.style || c?.style || "bounce",
+    layout: saved.layout || c?.layout || "blur",
+    quality: saved.quality || 720,
+    max_clips: saved.max_clips ?? c?.max_clips ?? 6,
+    min_len: saved.min_len ?? c?.min_len ?? 15,
+    max_len: saved.max_len ?? c?.max_len ?? 60,
+    from: saved.from ?? "",
+    to: saved.to ?? ""
+  };
+}
+function saveComposerOpts() {
+  const o = jobOptions();
+  const fVal = $("#o_from") ? $("#o_from").value : (o.range_start != null ? String(o.range_start / 60) : "");
+  const tVal = $("#o_to") ? $("#o_to").value : (o.range_end != null ? String(o.range_end / 60) : "");
+  const raw = {
+    style: o.style,
+    layout: o.layout,
+    quality: o.quality,
+    max_clips: o.max_clips,
+    min_len: o.min_len,
+    max_len: o.max_len,
+    from: fVal,
+    to: tVal
+  };
+  try { localStorage.setItem("clipsx_opts", JSON.stringify(raw)); } catch {}
+}
 function drawAdd(variant) {
   const c = creator();
+  const cur = getComposerOpts(c);
+  const isOpen = Boolean(S.optsOpen);
   $("#add").innerHTML = `<form class="composer ${variant === "hero" ? "big" : "compact"}" id="addform">
     <div class="composer-input">${ic("link")}<input id="url" placeholder="Paste a YouTube, Twitch or Kick video link" autocomplete="off" aria-label="Video link"></div>
     <div class="att" id="att"><div><div class="att-in" id="attIn"></div></div></div>
     <div class="composer-bar">
       <button type="button" class="chip" data-act="pickfile">${ic("up")}Upload video</button>
       ${c ? "" : picker("o_creator", "File under creator", [{v:"", label:"No creator", icon:"user"}, ...S.creators.map(x => ({v:x.id, label:x.name, img:x.profile?.pic && x.profile.channel === x.channel ? avatarUrl(x) : ""}))], "")}
-      <button type="button" class="chip" data-act="toggleopts" aria-expanded="false">${ic("sliders")}Options</button>
+      <button type="button" class="chip ${isOpen ? "on" : ""}" data-act="toggleopts" aria-expanded="${String(isOpen)}">${ic("sliders")}Options</button>
       <span class="grow"></span><span class="hint">or drop a video file here</span>
       <button class="btn primary" id="goBtn">${ic("scissors")}Make clips</button>
     </div>
-    <div class="composer-opts" inert><div class="og">
+    <div class="composer-opts ${isOpen ? "open" : ""}" ${isOpen ? "" : "inert"}><div class="og">
       <div class="ob wide"><div class="ot">Clips</div><div class="nsteps">
-        ${stepper("o_max", "How many", c?.max_clips ?? 6, 1, 20, 1, "")}
-        ${stepper("o_min", "Shortest", c?.min_len ?? 15, 5, 120, 5, "s")}
-        ${stepper("o_maxlen", "Longest", c?.max_len ?? 60, 10, 180, 5, "s")}
+        ${stepper("o_max", "How many", cur.max_clips, 1, 20, 1, "")}
+        ${stepper("o_min", "Shortest", cur.min_len, 5, 120, 5, "s")}
+        ${stepper("o_maxlen", "Longest", cur.max_len, 10, 180, 5, "s")}
       </div></div>
-      <div class="ob"><div class="ot">Caption style</div>${choice("o_style", Object.entries(S.status.styles).map(([k, v]) => ({v:k, label:v, prev:capPrev(k)})), c?.style ?? "bounce")}</div>
-      <div class="ob"><div class="ot">Layout</div>${choice("o_layout", Object.entries(S.status.layouts).map(([k, v]) => ({v:k, label:LAYOUT_SHORT[k] || v, title:v, prev:`<span class="lay-prev ${esc(k)}"><span class="ph"><i></i></span></span>`})), c?.layout ?? "blur")}</div>
-      <div class="ob"><div class="ot">Video quality</div><input type="hidden" id="o_quality" value="720"><div class="seg" role="group" aria-label="Video quality">
-        <button type="button" data-seg="o_quality" data-v="720" aria-pressed="true">720p<small>Fast</small></button>
-        <button type="button" data-seg="o_quality" data-v="1080" aria-pressed="false">1080p<small>Sharper, about 2x slower</small></button></div></div>
+      <div class="ob"><div class="ot">Caption style</div>${choice("o_style", Object.entries(S.status.styles).map(([k, v]) => ({v:k, label:v, prev:capPrev(k)})), cur.style)}</div>
+      <div class="ob"><div class="ot">Layout</div>${choice("o_layout", Object.entries(S.status.layouts).map(([k, v]) => ({v:k, label:LAYOUT_SHORT[k] || v, title:v, prev:`<span class="lay-prev ${esc(k)}"><span class="ph"><i></i></span></span>`})), cur.layout)}</div>
+      <div class="ob"><div class="ot">Video quality</div><input type="hidden" id="o_quality" value="${cur.quality}"><div class="seg" role="group" aria-label="Video quality">
+        <button type="button" data-seg="o_quality" data-v="720" aria-pressed="${String(cur.quality) === "720"}">720p<small>Fast</small></button>
+        <button type="button" data-seg="o_quality" data-v="1080" aria-pressed="${String(cur.quality) === "1080"}">1080p<small>Sharper, about 2x slower</small></button></div></div>
       <div class="ob"><div class="ot">Part of the video</div><div class="range">
-        <label>From<input id="o_from" type="number" min="0" placeholder="start" aria-label="From minute">min</label>${ic("arrowr")}
-        <label>To<input id="o_to" type="number" min="0" placeholder="end" aria-label="Up to minute">min</label></div></div>
+        <label>From<input id="o_from" type="number" min="0" placeholder="start" value="${esc(cur.from)}" aria-label="From minute">min</label>${ic("arrowr")}
+        <label>To<input id="o_to" type="number" min="0" placeholder="end" value="${esc(cur.to)}" aria-label="Up to minute">min</label></div></div>
     </div></div></form>`;
   drawAtt();
 }
@@ -1410,11 +1443,26 @@ document.addEventListener("click", e => {
     p.querySelector("input[type=hidden]").dispatchEvent(new Event("change", {bubbles: true})); return; }
   if (!e.target.closest(".pick") || e.target.closest(".pick-new")) closePicks();
   const sg = e.target.closest("[data-seg]");
-  if (sg) { $("#" + sg.dataset.seg).value = sg.dataset.v;
-    sg.parentElement.querySelectorAll("[data-seg]").forEach(b => b.setAttribute("aria-pressed", String(b === sg))); return; }
+  if (sg) {
+    const inp = $("#" + sg.dataset.seg);
+    if (inp) inp.value = sg.dataset.v;
+    sg.parentElement.querySelectorAll("[data-seg]").forEach(b => b.setAttribute("aria-pressed", String(b === sg)));
+    saveComposerOpts();
+    return;
+  }
   const st = e.target.closest("[data-step]");
-  if (st) { const i = $("#" + st.dataset.step), s = Number(i.step) || 1, d = Number(st.dataset.d);
-    const v = Math.min(Number(i.max), Math.max(Number(i.min), (Number(i.value) || 0) + d * s)); i.value = v; }
+  if (st) {
+    const i = $("#" + st.dataset.step), s = Number(i.step) || 1, d = Number(st.dataset.d);
+    const v = Math.min(Number(i.max), Math.max(Number(i.min), (Number(i.value) || 0) + d * s));
+    i.value = v;
+    saveComposerOpts();
+    return;
+  }
+});
+document.addEventListener("input", e => {
+  if (["o_from", "o_to", "o_max", "o_min", "o_maxlen"].includes(e.target.id)) {
+    saveComposerOpts();
+  }
 });
 document.addEventListener("keydown", e => {
   const p = e.target.closest?.(".pick"); if (!p) return;
@@ -1427,10 +1475,32 @@ document.addEventListener("keydown", e => {
 });
 const targetCreator = () => creatorId() || $("#o_creator")?.value || "";
 function jobOptions() {
-  const n = id => { const v = $(id).value; return v === "" ? null : Number(v); };
-  const o = {max_clips:n("#o_max"), min_len:n("#o_min"), max_len:n("#o_maxlen"), style:$("#o_style").value, layout:$("#o_layout").value, quality:n("#o_quality")};
-  if (n("#o_from") !== null) o.range_start = n("#o_from") * 60;
-  if (n("#o_to") !== null) o.range_end = n("#o_to") * 60;
+  const c = creator();
+  const cur = getComposerOpts(c);
+  const n = id => {
+    const el = $(id);
+    if (!el || el.value === "") return null;
+    const v = Number(el.value);
+    return isNaN(v) ? null : v;
+  };
+  const str = id => {
+    const el = $(id);
+    return el && el.value ? el.value : null;
+  };
+  const o = {
+    max_clips: n("#o_max") ?? cur.max_clips,
+    min_len: n("#o_min") ?? cur.min_len,
+    max_len: n("#o_maxlen") ?? cur.max_len,
+    style: str("#o_style") || cur.style || "bounce",
+    layout: str("#o_layout") || cur.layout || "blur",
+    quality: n("#o_quality") ?? cur.quality ?? 720
+  };
+  const f = n("#o_from");
+  const t = n("#o_to");
+  if (f !== null) o.range_start = f * 60;
+  else if (cur.from !== "" && cur.from != null) o.range_start = Number(cur.from) * 60;
+  if (t !== null) o.range_end = t * 60;
+  else if (cur.to !== "" && cur.to != null) o.range_end = Number(cur.to) * 60;
   return o;
 }
 /* ---------- attachments: nothing starts until Make clips is pressed.
@@ -1512,7 +1582,7 @@ async function lookUp(u) {
     if (e instanceof TypeError) {           // the request itself dropped (network blip): try once more quietly
       await new Promise(r => setTimeout(r, 800));
       try { return await api("/api/preview?url=" + encodeURIComponent(u)); }
-      catch (e2) { throw new Error(e2 instanceof TypeError ? "Couldn't reach PeakCut to check that link. Check your connection and paste it again." : e2.message); }
+      catch (e2) { throw new Error(e2 instanceof TypeError ? "Couldn't reach Clips X to check that link. Check your connection and paste it again." : e2.message); }
     }
     throw e;
   }
@@ -1919,7 +1989,7 @@ function drawOverview() {
         ${barChart(o.daily || [])}</div>
       ${aiCard()}
     </div>
-    ${steps.length ? `<div class="card"><div class="card-head"><div><h2>Next steps</h2><p class="sub">Finish setting up PeakCut</p></div></div>
+    ${steps.length ? `<div class="card"><div class="card-head"><div><h2>Next steps</h2><p class="sub">Finish setting up Clips X</p></div></div>
       <div class="steps across">${steps.map((x, i) => `<button class="step" data-act="step" data-to="${esc(x[2])}"><span class="n">${i + 1}</span><span><b>${esc(x[0])}</b><span class="d">${esc(x[1])}</span></span>${ic("arrowr")}</button>`).join("")}</div></div>` : ""}
     <div class="card"><div class="card-head"><div><h2>Creators</h2><p class="sub">Each creator's status and results</p></div></div>
       ${o.creators.length ? `<div class="scroll"><table><tr><th>Creator</th><th>Status</th><th>Auto-post</th><th class="num">Clips today</th><th class="num">Posted today</th><th class="num">Waiting</th><th class="num">Failed</th><th class="num">Views</th><th class="num">Est. $</th></tr>
@@ -1988,11 +2058,29 @@ const setTabs = () => [
 function aiHints() {
   const k = S.ai, sel = $("#ai_provider"); if (!k || !sel) return;
   const pv = k.providers.find(x => x.id === sel.value) || k.providers[0], same = pv.id === k.provider;
-  $("#ai_key").placeholder = same && k.has_key ? `Saved${k.key_hint ? ", ends in " + k.key_hint : ""}. Paste a new key to replace it` : pv.needs_key ? "Paste your key" : "Not needed";
-  $("#ai_keyhint").innerHTML = pv.key_url ? `${pv.needs_key ? "Get a key at" : "Set it up at"} <a href="${esc(pv.key_url)}" target="_blank" rel="noopener">${esc(pv.key_url.replace("https://", ""))}</a>. The key stays on this server and is never shown again.` : "The key stays on this server and is never shown again.";
-  $("#ai_model").placeholder = pv.example ? "For example " + pv.example : "The model id, exactly as the service names it";
-  $("#ai_base").placeholder = pv.address || "http://127.0.0.1:1234/v1";
-  $("#ai_basewrap").hidden = pv.id !== "custom" && !(same && k.base_url);
+  if ($("#ai_key")) $("#ai_key").placeholder = same && k.has_key ? `Saved${k.key_hint ? ", ends in " + k.key_hint : ""}. Paste a new key to replace it` : pv.needs_key ? "Paste your key" : "Not needed";
+  if ($("#ai_keyhint")) $("#ai_keyhint").innerHTML = pv.key_url ? `${pv.needs_key ? "Get a key at" : "Set it up at"} <a href="${esc(pv.key_url)}" target="_blank" rel="noopener">${esc(pv.key_url.replace("https://", ""))}</a>. The key stays on this server and is never shown again.` : "The key stays on this server and is never shown again.";
+  if ($("#ai_model")) $("#ai_model").placeholder = pv.example ? "For example " + pv.example : "The model id, exactly as the service names it";
+  if ($("#ai_base")) $("#ai_base").placeholder = pv.address || "http://127.0.0.1:1234/v1";
+  if ($("#ai_basewrap")) $("#ai_basewrap").hidden = pv.id !== "custom" && pv.id !== "agentrouter" && !(same && k.base_url);
+}
+function syncAiCards() {
+  if (!S.aiChain) return;
+  $$("[data-aicard]").forEach(card => {
+    const idx = Number(card.dataset.aicard);
+    if (!S.aiChain[idx]) return;
+    const p = card.querySelector(".aichain_provider")?.value;
+    const k = card.querySelector(".aichain_key")?.value;
+    const b = card.querySelector(".aichain_base")?.value;
+    const m = card.querySelector(".aichain_models")?.value;
+    if (p) S.aiChain[idx].provider = p;
+    if (k !== undefined && k !== "") S.aiChain[idx].key = k;
+    if (b !== undefined) S.aiChain[idx].base_url = b;
+    if (m !== undefined) {
+      const parts = m.split(",").map(x => x.trim()).filter(Boolean);
+      if (parts.length) S.aiChain[idx].models = parts;
+    }
+  });
 }
 async function drawSettings() {
   const box = $("#sform"); if (!box) return;
@@ -2004,21 +2092,105 @@ async function drawSettings() {
   try {
     if (tab === "ai") {
       const k = S.ai = await api("/api/ai");
-      body.innerHTML = `<section class="set-sec"><h2>AI</h2><p class="help">PeakCut uses an AI model to pick the moments worth clipping and to write hooks, titles and captions. Use your own key from any of these services. You pay that service directly. Without a key, clips are picked by loudness.</p>
-          <div class="ai-state">${k.ready ? `<span class="pill ok">${ic("check")}Ready</span><span class="sub">${esc(k.label)} · ${esc(k.models[0] || "")}</span>` : `<span class="pill warn">Not set up</span><span class="sub">Choose a service, paste your key and pick a model.</span>`}</div>
-          <div class="ai-form">
-            <label class="f">AI service<select id="ai_provider">${k.providers.map(x => `<option value="${esc(x.id)}" ${x.id === k.provider ? "selected" : ""}>${esc(x.label)}</option>`).join("")}</select></label>
-            <label class="f">Key<input id="ai_key" type="password" autocomplete="off" spellcheck="false"><span class="hint" id="ai_keyhint"></span></label>
-            <label class="f" id="ai_basewrap">Address<input id="ai_base" value="${esc(k.base_url || "")}" spellcheck="false"><span class="hint">Where the service answers. Only needed for a custom service.</span></label>
-            <label class="f">Model<span class="with"><input id="ai_model" list="ai_models" value="${esc(k.models.join(", "))}" spellcheck="false"><button class="btn" type="button" data-act="aimodels">Find models</button></span>
-              <datalist id="ai_models"></datalist><span class="hint">A fast, inexpensive model is the right choice. Add a second one after a comma to fall back on.</span></label>
+      if (!S.aiChain) {
+        if (k.chain && k.chain.length) {
+          S.aiChain = JSON.parse(JSON.stringify(k.chain));
+        } else if (k.provider && (k.has_key || k.base_url)) {
+          S.aiChain = [{
+            id: k.id || "card_0_" + (k.provider || "gemini"),
+            provider: k.provider || "gemini",
+            models: k.models || ["gemini-2.5-flash"],
+            base_url: k.base_url || "",
+            key: "",
+            has_key: k.has_key,
+            key_hint: k.key_hint,
+            ready: k.ready
+          }];
+        } else {
+          S.aiChain = [];
+        }
+      }
+      const renderCards = () => {
+        if (!S.aiChain || !S.aiChain.length) {
+          return `<div class="card" style="margin-bottom:16px;border:1px dashed var(--line);border-radius:var(--r);background:var(--muted);padding:28px 20px;text-align:center;">
+            <p style="margin:0 0 6px;font-weight:600;font-size:15px;">No AI services configured.</p>
+            <p class="sub" style="margin:0 0 16px;">Add an AI provider (e.g. AgentRouter, OpenAI, Gemini) to enable automatic clipping and AI titles.</p>
+            <button class="btn primary" type="button" data-act="aiadd">${ic("plus")}Add AI provider</button>
+          </div>`;
+        }
+        return S.aiChain.map((item, idx) => {
+          const pv = k.providers.find(x => x.id === item.provider) || k.providers[0];
+          const isPrimary = idx === 0;
+          const isAgentRouter = item.provider === "agentrouter";
+          const isCustom = item.provider === "custom";
+          const addr = item.base_url || (isAgentRouter ? "https://agentrouter.org" : pv.address || "");
+          const keyPlaceholder = item.has_key ? `Saved${item.key_hint ? ', ends in ' + item.key_hint : ''}. Paste a new key to replace it` : pv.needs_key ? 'Paste your key' : 'Not needed';
+          const keyHint = pv.key_url ? `${pv.needs_key ? 'Get a key at' : 'Set it up at'} <a href="${esc(pv.key_url)}" target="_blank" rel="noopener">${esc(pv.key_url.replace('https://', ''))}</a>. The key stays on this server and is never shown again.` : 'The key stays on this server and is never shown again.';
+          return `<div class="card" style="margin-bottom:16px;border:1px solid var(--line);border-radius:var(--r);background:var(--muted);padding:16px 18px;" data-aicard="${idx}">
+            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:12px;">
+              <div class="row" style="align-items:center;gap:8px;">
+                <span class="pill ${isPrimary ? 'ok' : ''}" style="font-size:12px;">${isPrimary ? '1. Primary' : (idx + 1) + '. Fallback'}</span>
+                <b>${esc(pv.label)}</b>
+                ${item.ready ? `<span class="pill ok" style="font-size:11px;">${ic("check")}Ready</span>` : `<span class="pill warn" style="font-size:11px;">Not set up</span>`}
+              </div>
+              <div class="row" style="align-items:center;gap:6px;">
+                ${S.aiChain.length > 1 && idx > 0 ? `<button class="btn sm ghost" type="button" data-act="aimoveup" data-idx="${idx}" title="Move up" style="font-size:12px;padding:3px 8px;">${ic("up")}Up</button>` : ''}
+                ${S.aiChain.length > 1 && idx < S.aiChain.length - 1 ? `<button class="btn sm ghost" type="button" data-act="aimovedown" data-idx="${idx}" title="Move down" style="font-size:12px;padding:3px 8px;">${ic("down")}Down</button>` : ''}
+                <button class="btn sm ghost" type="button" data-act="airemove" data-idx="${idx}" style="color:var(--bad);" title="Remove this AI service">${ic("trash")}Remove</button>
+              </div>
+            </div>
+            <div class="ai-form">
+              <label class="f">AI service
+                <select class="aichain_provider" data-idx="${idx}">
+                  ${k.providers.map(x => `<option value="${esc(x.id)}" ${x.id === item.provider ? 'selected' : ''}>${esc(x.label)}</option>`).join('')}
+                </select>
+              </label>
+              <label class="f">
+                <span class="row" style="justify-content:space-between;align-items:center;margin-bottom:3px;">
+                  <span>Key</span>
+                  ${item.has_key ? `<button class="btn sm ghost" type="button" data-act="aiclearkey" data-idx="${idx}" style="font-size:11px;padding:2px 8px;height:auto;color:var(--bad);">${ic("trash")}Clear saved key</button>` : ''}
+                </span>
+                <span class="with">
+                  <input class="aichain_key" data-idx="${idx}" type="password" autocomplete="off" spellcheck="false" placeholder="${keyPlaceholder}" value="${esc(item.key || '')}">
+                  <button class="btn aieyetoggle" type="button" data-act="aieyetoggle" data-idx="${idx}" title="Show key" aria-label="Show or hide key" style="padding:0 10px;display:inline-flex;align-items:center;gap:4px;font-size:12px;">${ic("eye")}<span>Show</span></button>
+                </span>
+                <span class="hint aichain_keyhint" data-idx="${idx}">${keyHint}</span>
+              </label>
+              <label class="f aichain_basewrap" data-idx="${idx}" ${(!isCustom && !isAgentRouter && !item.base_url) ? 'hidden' : ''}>Address / Gateway URL
+                <input class="aichain_base" data-idx="${idx}" value="${esc(addr)}" placeholder="${isAgentRouter ? 'https://agentrouter.org' : pv.address || 'http://127.0.0.1:1234/v1'}" spellcheck="false">
+                <span class="hint">${isAgentRouter ? 'AgentRouter gateway base URL (defaults to https://agentrouter.org).' : 'Where the service answers.'}</span>
+              </label>
+              <label class="f">Model
+                <span class="with">
+                  <input class="aichain_models" data-idx="${idx}" list="ai_models_${idx}" value="${esc((item.models || []).join(', '))}" placeholder="${pv.example ? 'For example ' + pv.example : 'The model id, exactly as the service names it'}" spellcheck="false">
+                  <button class="btn" type="button" data-act="aimodels" data-idx="${idx}">Find models</button>
+                </span>
+                <datalist id="ai_models_${idx}"></datalist>
+                <span class="hint">${isPrimary ? 'Primary model. If this service fails, is down, or gets rate-limited (HTTP 429), Clips X automatically switches to the fallback provider below.' : 'Fallback model used automatically when previous providers fail or run out of quota.'}</span>
+              </label>
+            </div>
+          </div>`;
+        }).join('');
+      };
+      body.innerHTML = `<section class="set-sec">
+        <h2>AI Services &amp; Automatic Fallback Chain</h2>
+        <p class="help">Clips X uses an AI model to pick the moments worth clipping and to write hooks, titles and captions. You can configure multiple providers (e.g. 1: AgentRouter, 2: OpenAI, 3: Gemini). If your primary provider is unavailable or runs out of quota, Clips X switches to the next fallback provider automatically.</p>
+        <div id="ai_cards_box">${renderCards()}</div>
+        <div class="row" style="margin-top:14px;gap:10px;">
+          <button class="btn" type="button" data-act="aiadd">${ic("plus")}${S.aiChain?.length ? 'Add fallback provider (e.g. OpenAI / AgentRouter)' : 'Add AI provider'}</button>
+        </div>
+        <div class="row" style="margin-top:24px;gap:10px;justify-content:space-between;align-items:center;">
+          <div class="row" style="gap:10px;">
+            <button class="btn primary" data-act="aisave">Save and test all</button>
+            <button class="btn" data-act="aitest">Test again</button>
           </div>
-          <div class="row" style="margin-top:20px"><button class="btn primary" data-act="aisave">Save and test</button>${k.ready ? `<button class="btn" data-act="aitest">Test again</button>` : ""}</div></section>`;
-      aiHints();
+          ${(k.saved_here || S.aiChain?.length) ? `<button class="btn ghost" type="button" data-act="aiclearall" style="color:var(--bad);">${ic("trash")}Reset AI config</button>` : ''}
+        </div>
+      </section>`;
     }
     if (tab === "profile") {
       const joined = me.created_at ? new Date(me.created_at * 1000).toLocaleDateString([], {day: "numeric", month: "long", year: "numeric"}) : "";
-      body.innerHTML = `<section class="set-sec"><h2>Profile</h2><p class="help">This is how you appear in PeakCut.</p>
+      body.innerHTML = `<section class="set-sec"><h2>Profile</h2><p class="help">This is how you appear in Clips X.</p>
         <div class="prof">${meAvatar(me).replace('class="avatar me-pic"', 'class="avatar prof-pic"')}<div><b>${esc(me.name)}</b><span>${esc(me.email)}</span></div></div>
         <dl class="kv"><div><dt>Email</dt><dd>${esc(me.email)} ${me.verified === false ? `<span class="pill warn">Not confirmed</span>` : `<span class="pill ok">Confirmed</span>`}</dd></div>
           <div><dt>Sign-in method</dt><dd>${me.google ? `Google${me.has_password ? " and password" : ""}` : "Email and password"}</dd></div>
@@ -2032,7 +2204,7 @@ async function drawSettings() {
             <label class="f">${me.has_password ? "New password" : "Password"}<input id="pw_new" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label></div>
           <div class="row" style="margin-top:14px"><button class="btn primary" data-act="pwsave">${me.has_password ? "Change password" : "Set password"}</button>
             ${me.has_password ? `<a class="btn ghost" href="/reset">Forgot it?</a>` : ""}</div></section>
-        <section class="set-sec"><h2>Sessions</h2><p class="help">Sign out of PeakCut on this device. Changing your password signs out every other device too.</p>
+        <section class="set-sec"><h2>Sessions</h2><p class="help">Sign out of Clips X on this device. Changing your password signs out every other device too.</p>
           <button class="btn" data-act="logout">${ic("signout")}Sign out</button></section>
         <section class="set-sec"><h2 style="color:var(--bad)">Delete account</h2><p class="help">Removes your account and everything in it for good: creators, recordings, videos, clips and history.</p>
           <button class="btn danger" data-act="delaccount">${ic("trash")}Delete my account</button></section>`;
@@ -2071,7 +2243,7 @@ async function drawSettings() {
             <p class="sub">To let people connect ${name}, register this server once with <a href="${g[0]}" target="_blank" rel="noopener">${g[1]}</a>. It takes about five minutes.</p>
             <ol>${g[2].map(x => `<li>${x}</li>`).join("")}</ol>
             <div class="copyrow"><code>${esc(st.redirect)}</code><button class="btn sm" data-act="copytext" data-t="${esc(st.redirect)}">${ic("copy")}Copy</button></div>
-            ${!st.https && pf !== "youtube" ? `<p class="warnline">${name} only accepts https addresses. Put PeakCut on a domain with https (or a tunnel) and set PEAKCUT_PUBLIC_URL to it first.</p>` : ""}
+            ${!st.https && pf !== "youtube" ? `<p class="warnline">${name} only accepts https addresses. Put Clips X on a domain with https (or a tunnel) and set CLIPSX_PUBLIC_URL to it first.</p>` : ""}
             <div class="fields"><label class="f">${esc(st.id_label)}<input id="app_id" placeholder="${st.ready ? "Saved: " + esc(st.id_hint) + ". Paste a new one to replace it" : ""}" autocomplete="off" spellcheck="false"></label>
               <label class="f">${esc(st.secret_label)}<input id="app_secret" type="password" placeholder="${st.ready ? "Saved. Paste a new one to replace it" : ""}" autocomplete="off"></label></div>
             <p class="sub">${g[3]}</p>
@@ -2079,7 +2251,7 @@ async function drawSettings() {
         return `<div class="appcard"><span class="applogo" style="background:${bg}">${logo}</span>
           <div class="apptx"><b>${name}</b><span>${desc}</span>${listOf(accs)}</div><div class="appact">${act}</div>${panel}</div>`;
       };
-      body.innerHTML = `<section class="set-sec"><h2>Connected apps</h2><p class="help">Connect the accounts PeakCut posts clips to: press Connect, sign in on the platform's own page, and you're back here. PeakCut never sees your passwords. Then pick which accounts each creator posts to, in that creator's Setup.</p>
+      body.innerHTML = `<section class="set-sec"><h2>Connected apps</h2><p class="help">Connect the accounts Clips X posts clips to: press Connect, sign in on the platform's own page, and you're back here. Clips X never sees your passwords. Then pick which accounts each creator posts to, in that creator's Setup.</p>
         <div class="apps">
           ${card("youtube", "YouTube", yt, "#FF0000", "Post clips to your channel as Shorts.")}
           ${card("instagram", "Instagram", ig, "linear-gradient(45deg,#F58529,#DD2A7B,#8134AF)", "Post clips as Reels. Needs a Creator or Business account.")}
@@ -2185,6 +2357,22 @@ document.addEventListener("dragleave", () => $(".composer")?.classList.remove("o
 document.addEventListener("drop", e => { const a = $(".composer"); if (a) { e.preventDefault(); a.classList.remove("over"); attach(e.dataTransfer.files); } });
 document.addEventListener("change", async e => {
   const t = e.target;
+  if (t.classList.contains("aichain_provider")) {
+    const idx = Number(t.dataset.idx);
+    const newP = t.value;
+    const pv = S.ai?.providers?.find(x => x.id === newP) || S.ai?.providers?.[0];
+    if (S.aiChain && S.aiChain[idx]) {
+      syncAiCards();
+      S.aiChain[idx].provider = newP;
+      S.aiChain[idx].base_url = newP === "agentrouter" ? "https://agentrouter.org" : (newP === "custom" ? (S.aiChain[idx].base_url || "") : "");
+      if (pv && pv.example) S.aiChain[idx].models = [pv.example];
+      S.aiChain[idx].key = "";
+      S.aiChain[idx].has_key = false;
+      S.aiChain[idx].key_hint = "";
+      S.aiChain[idx].ready = false;
+      return drawSettings();
+    }
+  }
   if (t.id === "ai_provider") { $("#ai_models").innerHTML = ""; if (S.ai && t.value !== S.ai.provider) { $("#ai_model").value = ""; $("#ai_base").value = ""; } return aiHints(); }
   if (t.dataset.sel) {
     const k = t.dataset.sel;
@@ -2212,31 +2400,221 @@ document.addEventListener("click", async e => {
   if (b.tagName === "A") e.preventDefault();
   try {
     if (a === "go") { closePops(); return go(d.v, d.tab); }
-    if (a === "aimodels") {
+    if (a === "aiadd") {
+      syncAiCards();
+      if (!S.aiChain) S.aiChain = [];
+      const used = S.aiChain.map(x => x.provider);
+      let nextP = "agentrouter";
+      if (!used.includes("agentrouter")) nextP = "agentrouter";
+      else if (!used.includes("openai")) nextP = "openai";
+      else if (!used.includes("gemini")) nextP = "gemini";
+      else if (!used.includes("xai")) nextP = "xai";
+      else nextP = "custom";
+      const pv = S.ai?.providers?.find(x => x.id === nextP) || S.ai?.providers?.[0];
+      S.aiChain.push({
+        id: `card_${Date.now()}_${nextP}`,
+        provider: nextP,
+        models: pv?.example ? [pv.example] : ["gpt-6.1-sol"],
+        base_url: nextP === "agentrouter" ? "https://agentrouter.org" : "",
+        key: "",
+        has_key: false,
+        key_hint: "",
+        ready: false
+      });
+      return drawSettings();
+    }
+    if (a === "airemove") {
+      syncAiCards();
+      const idx = Number(d.idx);
+      if (S.aiChain && idx >= 0 && idx < S.aiChain.length) {
+        const item = S.aiChain[idx];
+        const pvLabel = S.ai?.providers?.find(x => x.id === item.provider)?.label || item.provider;
+        if (!await ask(`Remove ${pvLabel}?`, `This AI service will be removed immediately from your configuration.`, "Remove", true)) return;
+        S.aiChain.splice(idx, 1);
+        const chainData = S.aiChain.map(it => ({
+          id: it.id,
+          provider: it.provider,
+          models: it.models,
+          base_url: it.base_url || "",
+          key: it.key,
+          clear_key: it.clear_key
+        }));
+        try {
+          if (chainData.length === 0) {
+            await send("/api/ai", {}, "DELETE");
+          } else {
+            await send("/api/ai", {chain: chainData}, "PUT");
+          }
+          S.aiChain = null;
+          S.status = await api("/api/status");
+          drawShell();
+          await drawSettings();
+          toast(`Removed ${pvLabel}.`, "ok");
+        } catch (err) {
+          toast(err.message, "bad");
+        }
+        return;
+      }
+    }
+    if (a === "aiclearkey") {
+      syncAiCards();
+      const idx = Number(d.idx);
+      if (S.aiChain && S.aiChain[idx]) {
+        S.aiChain[idx].has_key = false;
+        S.aiChain[idx].key = "";
+        S.aiChain[idx].key_hint = "";
+        S.aiChain[idx].clear_key = true;
+        S.aiChain[idx].ready = false;
+        toast("Saved key cleared. Type or paste your new key and click Save.", "ok");
+        return drawSettings();
+      }
+    }
+    if (a === "aieyetoggle") {
+      const idx = Number(d.idx || 0);
+      const card = $(`[data-aicard="${idx}"]`);
+      if (!card) return;
+      const input = card.querySelector(".aichain_key");
+      if (!input) return;
+      const item = S.aiChain && S.aiChain[idx];
+      if (input.type === "password") {
+        if (!input.value && item && item.has_key) {
+          try {
+            const r = await api(`/api/ai/reveal?idx=${idx}&id=${encodeURIComponent(item.id || "")}`);
+            if (r.key) {
+              input.value = r.key;
+              item.key = r.key;
+            }
+          } catch {}
+        }
+        input.type = "text";
+        b.innerHTML = `${ic("eye_slash")}<span>Hide</span>`;
+        b.setAttribute("title", "Hide key");
+      } else {
+        input.type = "password";
+        b.innerHTML = `${ic("eye")}<span>Show</span>`;
+        b.setAttribute("title", "Show key");
+      }
+      return;
+    }
+    if (a === "aimoveup") {
+      syncAiCards();
+      const idx = Number(d.idx);
+      if (S.aiChain && idx > 0 && idx < S.aiChain.length) {
+        const temp = S.aiChain[idx];
+        S.aiChain[idx] = S.aiChain[idx - 1];
+        S.aiChain[idx - 1] = temp;
+        const chainData = S.aiChain.map(it => ({
+          id: it.id,
+          provider: it.provider,
+          models: it.models,
+          base_url: it.base_url || "",
+          key: it.key,
+          clear_key: it.clear_key
+        }));
+        try {
+          await send("/api/ai", {chain: chainData}, "PUT");
+          S.aiChain = null;
+        } catch (err) {}
+        return drawSettings();
+      }
+    }
+    if (a === "aimovedown") {
+      syncAiCards();
+      const idx = Number(d.idx);
+      if (S.aiChain && idx >= 0 && idx < S.aiChain.length - 1) {
+        const temp = S.aiChain[idx];
+        S.aiChain[idx] = S.aiChain[idx + 1];
+        S.aiChain[idx + 1] = temp;
+        const chainData = S.aiChain.map(it => ({
+          id: it.id,
+          provider: it.provider,
+          models: it.models,
+          base_url: it.base_url || "",
+          key: it.key,
+          clear_key: it.clear_key
+        }));
+        try {
+          await send("/api/ai", {chain: chainData}, "PUT");
+          S.aiChain = null;
+        } catch (err) {}
+        return drawSettings();
+      }
+    }
+    if (a === "aiclearall") {
+      if (!await ask("Reset AI configuration?", "This deletes all saved AI services, gateway addresses, and API keys from this server.", "Reset all", true)) return;
       b.disabled = true;
       try {
-        const r = await send("/api/ai/models", {provider: $("#ai_provider").value, base_url: $("#ai_base").value, key: $("#ai_key").value});
-        $("#ai_models").innerHTML = r.models.map(m => `<option value="${esc(m)}">`).join("");
+        await send("/api/ai", {}, "DELETE");
+        S.aiChain = [];
+        S.status = await api("/api/status");
+        drawShell();
+        await drawSettings();
+        toast("AI configuration reset.", "ok");
+      } catch (err) {
+        toast(err.message, "bad");
+      } finally {
+        b.disabled = false;
+      }
+      return;
+    }
+    if (a === "aimodels") {
+      b.disabled = true;
+      const idx = Number(d.idx || 0);
+      const card = $(`[data-aicard="${idx}"]`);
+      const item = S.aiChain && S.aiChain[idx];
+      const selP = card ? card.querySelector(".aichain_provider")?.value : $("#ai_provider")?.value;
+      const baseU = card ? card.querySelector(".aichain_base")?.value : $("#ai_base")?.value;
+      const keyV = card ? card.querySelector(".aichain_key")?.value : $("#ai_key")?.value;
+      const listEl = $(`#ai_models_${idx}`) || $("#ai_models");
+      const inputEl = card ? card.querySelector(".aichain_models") : $("#ai_model");
+      try {
+        const r = await send("/api/ai/models", {id: item?.id || "", idx: idx, provider: selP, base_url: baseU, key: keyV});
+        if (listEl) listEl.innerHTML = r.models.map(m => `<option value="${esc(m)}">`).join("");
+        if (r.models.length && inputEl && (!inputEl.value || (selP === "agentrouter" && inputEl.value === "claude-3-5-sonnet"))) inputEl.value = r.models[0];
         toast(r.models.length ? `${r.models.length} models found. Click the model box to pick one.` : "The service listed no models. Type the model yourself.", r.models.length ? "ok" : "");
-        if (r.models.length) $("#ai_model").focus();
+        if (r.models.length && inputEl) inputEl.focus();
       } finally { b.disabled = false; }
       return;
     }
     if (a === "aisave" || a === "aitest") {
       b.disabled = true;
       try {
-        if (a === "aisave") await send("/api/ai", {provider: $("#ai_provider").value, models: $("#ai_model").value, base_url: $("#ai_base").value, key: $("#ai_key").value}, "PUT");
-        let ok = null, why = "";
-        try { ok = await send("/api/ai/test"); } catch (err) { why = err.message; }
+        if (a === "aisave") {
+          syncAiCards();
+          const chainData = [];
+          if (S.aiChain && S.aiChain.length) {
+            S.aiChain.forEach(item => {
+              chainData.push({
+                id: item.id,
+                provider: item.provider,
+                models: item.models,
+                base_url: item.base_url || "",
+                key: item.key,
+                clear_key: item.clear_key
+              });
+            });
+          }
+          await send("/api/ai", {chain: chainData}, "PUT");
+          S.aiChain = null;
+        }
+        let res = null, why = "";
+        try { res = await send("/api/ai/test", {all: true}); } catch (err) { why = err.message; }
         S.status = await api("/api/status"); drawShell(); await drawSettings();
-        if (ok) toast(`Saved. ${ok.model} answered, so the AI is ready.`, "ok");
-        else toast(`Saved, but the test failed. ${why}`, "bad");
+        if (res && res.ok) {
+          const okList = (res.results || []).filter(x => x.ok).map(x => `${x.provider} (${x.model})`).join(" -> ");
+          toast(`Saved! AI fallback chain active: ${okList || "Ready."}`, "ok");
+        } else if (res && res.results && res.results.length) {
+          const bad = res.results.filter(x => !x.ok).map(x => `${x.provider}: ${x.error}`).join("; ");
+          toast(`Saved, but some providers failed: ${bad}`, "bad");
+        } else {
+          toast(why ? `Saved, but the test failed: ${why}` : "Saved.", why ? "bad" : "ok");
+        }
       } finally { b.disabled = false; }
       return;
     }
     if (a === "menu") return $("#app").classList.toggle("open");
     if (a === "collapse") { const m = $("#app").classList.toggle("mini"); try { localStorage.setItem("mini", m ? "1" : ""); } catch {} return; }
-    if (a === "toggleopts") { const p = $(".composer-opts"), open = !p.classList.contains("open"); p.classList.toggle("open", open); p.inert = !open; b.classList.toggle("on", open); b.setAttribute("aria-expanded", String(open)); return; }
+    if (a === "toggleopts") { const p = $(".composer-opts"), open = !p.classList.contains("open"); p.classList.toggle("open", open); p.inert = !open; b.classList.toggle("on", open); b.setAttribute("aria-expanded", String(open)); S.optsOpen = open; return; }
     if (a === "focusurl") return $("#url")?.focus();
     if (a === "step") {
       const t = d.to;
@@ -2369,7 +2747,7 @@ document.addEventListener("click", async e => {
     if (a === "tour") return startTour();
     if (a === "settab") { e.preventDefault(); S.stab = d.k; remember("settings", d.k); return drawSettings(); }
     if (a === "updhow") return updateHow();
-    if (a === "updlater") { try { localStorage.setItem("peakcut_update_seen", S.status.update?.latest || ""); } catch {} return drawShell(); }
+    if (a === "updlater") { try { localStorage.setItem("clipsx_update_seen", S.status.update?.latest || ""); localStorage.setItem("peakcut_update_seen", S.status.update?.latest || ""); } catch {} return drawShell(); }
     if (a === "appsetup") { S.setupOpen = d.p && S.setupOpen !== d.p ? d.p : ""; return drawSettings(); }
     if (a === "copytext") { await navigator.clipboard.writeText(d.t); return toast("Copied", "ok"); }
     if (a === "appsave") {
@@ -2427,8 +2805,8 @@ $("#main").addEventListener("scroll", () => $(".topbar").classList.toggle("stuck
   await tick();
   { const [v, tab] = location.pathname.startsWith("/app/") ? fromPath(location.pathname) : ["overview", "clips"]; go(v, tab, true); remember(S.view, S.ctab, "replace"); }
   try {  // a link pasted on the home page before signing up
-    const link = sessionStorage.getItem("peakcut_link");
-    if (link) { sessionStorage.removeItem("peakcut_link"); go("overview"); $("#url").value = link; onLink($("#url")); $("#url").focus(); toast("Your link is ready. Press Make clips.", "ok"); }
+    const link = sessionStorage.getItem("clipsx_link") || sessionStorage.getItem("peakcut_link");
+    if (link) { sessionStorage.removeItem("clipsx_link"); sessionStorage.removeItem("peakcut_link"); go("overview"); $("#url").value = link; onLink($("#url")); $("#url").focus(); toast("Your link is ready. Press Make clips.", "ok"); }
   } catch {}
   loop();
   if (S.status.tour && !$("#formdlg").open) setTimeout(startTour, 500);   // once, the first time someone signs in
