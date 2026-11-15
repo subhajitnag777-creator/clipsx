@@ -36,7 +36,10 @@
 [hidden] { display: none !important; }
 body {
   margin: 0;
-  background: #FAFAFA;
+  background: #FFFFFF;
+  background-image:
+    radial-gradient(ellipse 70% 45% at 50% 0%, rgba(254, 240, 138, 0.32) 0%, rgba(255, 255, 255, 0) 70%),
+    radial-gradient(circle at 100% 100%, rgba(254, 249, 195, 0.25) 0%, rgba(255, 255, 255, 0) 50%);
   color: var(--text-main);
   font: 15px/1.55 "Geist", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -48,27 +51,6 @@ body {
   padding: 32px 20px;
   position: relative;
   overflow-x: hidden;
-}
-
-/* Background Studio Simulation */
-.bg-preview {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  background: #F4F4F5;
-  filter: blur(14px) brightness(0.97);
-  -webkit-filter: blur(14px) brightness(0.97);
-  pointer-events: none;
-  user-select: none;
-}
-.bg-blur-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 2;
-  background: rgba(255, 255, 255, 0.5);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  pointer-events: none;
 }
 
 /* Central Card */
@@ -228,9 +210,6 @@ input:focus {
 </style>
 </head>
 <body>
-<div class="bg-preview" aria-hidden="true"></div>
-<div class="bg-blur-overlay" aria-hidden="true"></div>
-
 <div class="auth-viewport">
   <div class="auth-card">
     <a href="/" class="brand-link">
