@@ -7,13 +7,13 @@ services:
     container_name: clipsx-app
     restart: unless-stopped
     ports:
-      - "${PORT:-2100}:${PORT:-2100}"
+      - "${PORT:-2114}:${PORT:-2114}"
     env_file:
       - .env
     volumes:
       - clipsx-data:/app/data
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://127.0.0.1:${PORT:-2100}/healthz"]
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:${PORT:-2114}/healthz"]
       interval: 30s
       timeout: 10s
       retries: 3

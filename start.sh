@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 # ==============================================================================
-# Clips X VPS Production Starter (Port 2100)
+# Clips X VPS Production Starter (Port 2114)
 # ==============================================================================
 
 set -e
 cd "$(dirname "$0")"
 
-export PORT="${PORT:-2100}"
+export PORT="${PORT:-2114}"
 export HOST="${HOST:-0.0.0.0}"
 
 echo "=================================================="
 echo "          Starting Clips X on VPS"
-echo "  URL: http://m2.obsidianhosting.in:${PORT}"
+echo "  URL: http://m3.obsidianhosting.in:${PORT}"
 echo "=================================================="
 
 # 1. Check Python
