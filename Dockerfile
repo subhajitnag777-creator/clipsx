@@ -22,16 +22,16 @@ COPY . .
 
 # Environment defaults
 ENV PYTHONUNBUFFERED=1 \
-    PORT=8765 \
+    PORT=2100 \
     HOST=0.0.0.0 \
     CLIPSX_FETCH_MODEL=0 \
     CLIPSX_UPDATE_CHECK=0
 
-EXPOSE 8765
+EXPOSE 2100
 
 # Healthcheck
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -f http://127.0.0.1:8765/healthz || exit 1
+    CMD curl -f http://127.0.0.1:2100/healthz || exit 1
 
 # Start Clips X Studio
 CMD ["python", "-m", "studio.server"]

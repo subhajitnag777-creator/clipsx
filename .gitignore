@@ -16,6 +16,7 @@ storage.json
 *.log
 *.rar
 *.zip
+clipsx-vps.zip
 
 # ---- this computer only
 .claude/
