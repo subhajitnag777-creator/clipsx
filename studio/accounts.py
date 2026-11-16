@@ -110,6 +110,8 @@ def can_connect(platform: str) -> bool:
 
 
 def redirect_for(platform: str) -> str:
+    if platform == "youtube" and getattr(config, "YOUTUBE_CALLBACK_URL", None):
+        return config.YOUTUBE_CALLBACK_URL
     return f"{config.PUBLIC_URL}/oauth/{platform}/callback"
 
 

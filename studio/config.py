@@ -309,6 +309,7 @@ PASSWORD_RESET_RATE_LIMIT_WINDOW = int(env("PASSWORD_RESET_RATE_LIMIT_WINDOW_MIN
 
 # ---------------------------------------------------------------- Google OAuth
 GOOGLE_CALLBACK_URL = env("GOOGLE_CALLBACK_URL", f"{PUBLIC_URL}/auth/google/callback").strip()
+YOUTUBE_CALLBACK_URL = env("YOUTUBE_CALLBACK_URL", f"{PUBLIC_URL}/oauth/youtube/callback").strip()
 
 
 # ---------------------------------------------------------------- Google (sign in with Google, and connecting YouTube)

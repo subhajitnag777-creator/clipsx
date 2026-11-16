@@ -3,11 +3,12 @@
 Nothing here can be undone, so every caller asks the person first. Work in progress is never pulled out from under
 itself: a video still being made, or a stream still being recorded, has to finish or be stopped first."""
 import shutil
+import threading
 import time
 import zipfile
 from pathlib import Path
 
-from . import auth, config, creators, ctx, db, jobs, live, usage
+from . import auth, config, creators, ctx, db, jobs, live, r2, usage
 
 
 class Busy(Exception):
@@ -32,12 +33,29 @@ def delete_clip(jid: str, cid: str) -> bool:
     job["clips"] = [c for c in job["clips"] if c["id"] != cid]
     jobs.save(job)
     d = Path(job["dir"])
-    for name in (clip.get("file"), clip.get("cover")):
-        if name:
-            (d / "clips" / Path(str(name)).name).unlink(missing_ok=True)
+    clips_dir = d / "clips"
+    if clips_dir.is_dir():
+        for name in (clip.get("file"), clip.get("cover")):
+            if name:
+                (clips_dir / Path(str(name)).name).unlink(missing_ok=True)
+        for pattern in (f"{cid}.*", f"{cid}_*", f"{cid}v*"):
+            for f in clips_dir.glob(pattern):
+                f.unlink(missing_ok=True)
     src = clip.get("src")
-    if src and Path(src).parent == d:              # the piece of video fetched just for this clip
-        Path(src).unlink(missing_ok=True)
+    if src:
+        try:
+            Path(src).unlink(missing_ok=True)
+        except OSError:
+            pass
+    if r2.is_enabled():
+        for fname in (clip.get("file"), clip.get("cover")):
+            if fname:
+                threading.Thread(target=r2.delete_file, args=(f"clips/{jid}/{fname}",), daemon=True).start()
+    if not job["clips"]:
+        for f in (d / "source.mp4", d / "audio.wav", d / "source_audio.wav"):
+            f.unlink(missing_ok=True)
+        for f in d.glob("audio_src*"):
+            f.unlink(missing_ok=True)
     ctx.bump()
     return True
 
@@ -63,6 +81,7 @@ def delete_many(job_ids: list, clip_ids: list) -> dict:
             out["clips"] += bool(delete_clip(jid, cid))
         except Busy:
             out["skipped"] += 1
+    ctx.bump()
     return out
 
 

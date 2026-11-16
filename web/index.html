@@ -2400,7 +2400,9 @@ function drawClipDlg(full) {
           : `<p class="help">No accounts connected yet. Connect one in Settings.</p>`}
         <div class="row" style="margin-top:auto;padding-top:8px;border-top:1px solid var(--line)">
           ${c.status === "done" ? `<a class="btn" href="${m}${esc(c.file)}?download=1">${ic("down")}Download</a>` : ""}
-          <button class="btn" data-act="copy" data-j="${j.id}" data-c="${esc(c.id)}">${ic("copy")}Copy post text</button></div>
+          <button class="btn" data-act="copy" data-j="${j.id}" data-c="${esc(c.id)}">${ic("copy")}Copy post text</button>
+          <span class="grow"></span>
+          <button class="btn danger ghost" data-act="delclip" data-j="${j.id}" data-c="${esc(c.id)}">${ic("trash")}Delete clip</button></div>
       </div></div>`;
   } else if (D.sig !== sig) $("#stage").innerHTML = stage;
   D.sig = sig;
@@ -2808,6 +2810,8 @@ document.addEventListener("click", async e => {
       if (!await ask("Delete this clip?", "The clip is removed for good. The video and its other clips stay.", "Delete clip", true)) return;
       await api(`/api/jobs/${d.j}/clips/${encodeURIComponent(d.c)}`, {method:"DELETE"});
       const j = jobOf(d.j); if (j) j.clips = j.clips.filter(c => c.id !== d.c);
+      if (D.jid === d.j && D.cid === d.c && $("#clipdlg")?.open) $("#clipdlg").close();
+      sel().delete(`c:${d.j}:${d.c}`);
       render(); toast("Clip deleted", "ok"); return tick();
     }
     if (a === "dlall") return zipDownload((jobOf(d.j)?.clips || []).filter(c => c.status === "done").map(c => d.j + "." + c.id));
@@ -2823,7 +2827,12 @@ document.addEventListener("click", async e => {
       const what = [jobsSel.length ? (jobsSel.length === 1 ? "1 video with all its clips" : `${jobsSel.length} videos with all their clips`) : "", clipsSel.length ? `${clipsSel.length} clip${clipsSel.length === 1 ? "" : "s"}` : ""].filter(Boolean).join(" and ");
       if (!await ask("Delete what you selected?", `This removes ${what} for good. It cannot be undone.`, "Delete", true)) return;
       const r = await send("/api/bulk/delete", {videos: jobsSel, clips: clipsSel});
-      sel().clear(); await tick(); render();
+      const deadVids = new Set(jobsSel);
+      S.jobs = S.jobs.filter(j => !deadVids.has(j.id));
+      const deadClips = new Set(clipsSel.map(([j, c]) => `${j}:${c}`));
+      S.jobs.forEach(j => { j.clips = j.clips.filter(c => !deadClips.has(`${j.id}:${c.id}`)); });
+      if (D.jid && (deadVids.has(D.jid) || deadClips.has(`${D.jid}:${D.cid}`)) && $("#clipdlg")?.open) $("#clipdlg").close();
+      sel().clear(); render(); await tick();
       return toast(`Deleted ${r.videos} video${r.videos === 1 ? "" : "s"} and ${r.clips} clip${r.clips === 1 ? "" : "s"}` + (r.skipped ? `. ${r.skipped} still being made were left alone.` : ""), "ok");
     }
     if (a === "delcreator") {
@@ -2843,7 +2852,11 @@ document.addEventListener("click", async e => {
     }
     if (a === "deljob") {
       if (!await ask("Delete this video?", "The video and all of its clips are permanently deleted. This cannot be undone.", "Delete", true)) return;
-      await api(`/api/jobs/${d.j}`, {method:"DELETE"}); toast("Deleted"); return tick();
+      await api(`/api/jobs/${d.j}`, {method:"DELETE"});
+      S.jobs = S.jobs.filter(j => j.id !== d.j);
+      if (D.jid === d.j && $("#clipdlg")?.open) $("#clipdlg").close();
+      sel().delete(`j:${d.j}`);
+      render(); toast("Deleted", "ok"); return tick();
     }
     if (a === "chadd") {
       const k = d.p, v = $("#chan_" + k)?.value.trim();
