@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: clipsx-backend
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8765
+      - key: HOST
+        value: 0.0.0.0
+      - key: CLIPSX_ACCOUNTS
+        value: "1"
+      - key: PUBLIC_URL
+        value: https://clipsx.subhajit0019.workers.dev
+      - key: ADMIN_EMAIL
+        value: subhajit0019@gmail.com,expsubha@gmail.com

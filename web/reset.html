@@ -6,6 +6,8 @@
 <title>Reset Password · Clips X</title>
 <meta name="description" content="Reset the password for your Clips X account.">
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="/brand/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -216,16 +218,21 @@ input:-webkit-autofill:active {
 .swap a:hover {
   text-decoration: underline;
 }
+.cf-turnstile-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 6px 0;
+  min-height: 65px;
+}
+.cf-turnstile-wrap:empty { display: none; }
 </style>
 </head>
 <body>
 <div class="auth-viewport">
   <div class="auth-card">
-    <a href="/" class="brand-link">
-      <div class="brand-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M19.5 6.19a3.02 3.02 0 0 0-2.12-2.14C15.5 3.55 12 3.55 12 3.55s-3.5 0-5.38.5A3.02 3.02 0 0 0 4.5 6.19C4 8.07 4 12 4 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 5.38.5 5.38.5s3.5 0 5.38-.5a3.02 3.02 0 0 0 2.12-2.14C20 15.93 20 12 20 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>
-      </div>
-      <div class="brand-text">Clips <span>X</span></div>
+    <a href="/" class="brand-link" aria-label="Clips X Home">
+      <img src="/brand/clipsx-full.png?v=clipsx3" alt="Clips X" style="height:44px;width:auto;object-fit:contain;display:block;">
     </a>
 
     <h2 id="h">Reset your password</h2>
@@ -234,6 +241,7 @@ input:-webkit-autofill:active {
     <form id="ask" autocomplete="off" novalidate>
       <div class="err" id="err" role="alert"></div>
       <label>Email Address<input id="email" type="email" autocomplete="off" placeholder="you@example.com" required></label>
+      <div id="turnstileForgot" class="cf-turnstile-wrap"></div>
       <button class="btn-primary" id="go1">Send Reset Link</button>
     </form>
 
@@ -245,6 +253,7 @@ input:-webkit-autofill:active {
       <div class="err" id="err2" role="alert"></div>
       <label>New Password<input id="pw" type="password" autocomplete="new-password" required minlength="8" placeholder="At least 8 characters"><span class="hint">At least 8 characters.</span></label>
       <label>Confirm Password<input id="pw2" type="password" autocomplete="new-password" required minlength="8" placeholder="Type password again"></label>
+      <div id="turnstileReset" class="cf-turnstile-wrap"></div>
       <button class="btn-primary" id="go2">Save New Password</button>
     </form>
 
@@ -256,32 +265,101 @@ input:-webkit-autofill:active {
 const q = new URLSearchParams(location.search), token = q.get("t");
 const $ = id => document.getElementById(id);
 const fail = (box, m) => { $(box).textContent = m; $(box).classList.add("on"); };
-["pw", "pw2"].forEach(id => { const el = $(id); if (el) el.value = ""; });
+
+const isApiKeyToken = v => Boolean(v && typeof v === "string" && (v.startsWith("sk-") || v.startsWith("api_") || v.startsWith("AIza") || v.startsWith("gsk_") || v.startsWith("xai-") || v.includes("VGOVIV") || (v.length >= 32 && !v.includes(" "))));
+const wipePw = () => ["pw", "pw2"].forEach(id => { const el = $(id); if (el && isApiKeyToken(el.value)) el.value = ""; });
+wipePw();
+setInterval(wipePw, 100);
+
 if (token) {
   $("ask").hidden = true; $("set").hidden = false;
   $("h").textContent = "Choose a new password"; $("p").textContent = "You'll be signed in and signed out everywhere else.";
 }
+
+// Turnstile Integration
+let turnstileConfig = { enabled: false, sitekey: "" };
+let widgetForgotId = null, widgetResetId = null;
+
+async function initTurnstile() {
+  try {
+    const res = await fetch("/api/public");
+    const data = await res.json();
+    if (data.turnstile && data.turnstile.enabled && data.turnstile.sitekey) {
+      turnstileConfig = data.turnstile;
+      loadTurnstileScript();
+    }
+  } catch {}
+}
+
+function loadTurnstileScript() {
+  if (document.getElementById("turnstileScript")) return;
+  const script = document.createElement("script");
+  script.id = "turnstileScript";
+  script.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoaded&render=explicit";
+  script.async = true;
+  script.defer = true;
+  document.head.appendChild(script);
+}
+
+window.onTurnstileLoaded = function() {
+  if (!turnstileConfig.sitekey || typeof turnstile === "undefined") return;
+  const cForgot = $("turnstileForgot"), cReset = $("turnstileReset");
+  if (cForgot && !widgetForgotId) {
+    widgetForgotId = turnstile.render(cForgot, { sitekey: turnstileConfig.sitekey, theme: "light" });
+  }
+  if (cReset && !widgetResetId) {
+    widgetResetId = turnstile.render(cReset, { sitekey: turnstileConfig.sitekey, theme: "light" });
+  }
+};
+
+initTurnstile();
+
 $("ask").addEventListener("submit", async e => {
   e.preventDefault(); $("err").classList.remove("on");
   const email = $("email").value.trim(); if (!email) return fail("err", "Enter your email.");
+  let turnstile_token = "";
+  if (turnstileConfig.enabled && typeof turnstile !== "undefined" && widgetForgotId != null) {
+    turnstile_token = turnstile.getResponse(widgetForgotId);
+    if (!turnstile_token) return fail("err", "Please complete the security challenge verification.");
+  }
   $("go1").disabled = true;
   try {
-    const r = await fetch("/api/auth/forgot", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({email})});
+    const r = await fetch("/api/auth/forgot", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email, turnstile_token})
+    });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong. Try again.");
+    if (!r.ok) {
+      if (typeof turnstile !== "undefined" && widgetForgotId != null) turnstile.reset(widgetForgotId);
+      throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong. Try again.");
+    }
     $("ask").hidden = true; $("sent").hidden = false;
   } catch (err) { fail("err", err.message); $("go1").disabled = false; }
 });
+
 $("set").addEventListener("submit", async e => {
   e.preventDefault(); $("err2").classList.remove("on");
   const a = $("pw").value, b = $("pw2").value;
   if (a.length < 8) return fail("err2", "Use at least 8 characters.");
   if (a !== b) return fail("err2", "The two passwords don't match.");
+  let turnstile_token = "";
+  if (turnstileConfig.enabled && typeof turnstile !== "undefined" && widgetResetId != null) {
+    turnstile_token = turnstile.getResponse(widgetResetId);
+    if (!turnstile_token) return fail("err2", "Please complete the security challenge verification.");
+  }
   $("go2").disabled = true;
   try {
-    const r = await fetch("/api/auth/reset", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({token, password:a})});
+    const r = await fetch("/api/auth/reset", {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({token, password:a, turnstile_token})
+    });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong. Try again.");
+    if (!r.ok) {
+      if (typeof turnstile !== "undefined" && widgetResetId != null) turnstile.reset(widgetResetId);
+      throw new Error(typeof d.detail === "string" ? d.detail : "Something went wrong. Try again.");
+    }
     location.href = "/app";
   } catch (err) { fail("err2", err.message); $("go2").disabled = false; }
 });

@@ -172,7 +172,13 @@ def reset_password(token: str, new: str):
 
 def get_user(uid: str):
     with db.engine.connect() as c:
-        return c.execute(sa.select(db.users).where(db.users.c.id == uid)).first()
+        u = c.execute(sa.select(db.users).where(db.users.c.id == uid)).first()
+    if u and config.OWNER_EMAIL and (u.email or "").strip().lower() == config.OWNER_EMAIL and not u.is_admin:
+        with db.engine.begin() as c:
+            c.execute(db.users.update().where(db.users.c.id == uid).values(is_admin=True))
+        with db.engine.connect() as c:
+            u = c.execute(sa.select(db.users).where(db.users.c.id == uid)).first()
+    return u
 
 
 def user_ids() -> list:
@@ -185,13 +191,13 @@ def _create(email: str, name: str, password_hash=None, google_sub=None):
     if not EMAIL_RE.match(email):
         raise AuthError("Enter a valid email address.")
     uid = "u_" + secrets.token_hex(8)
+    is_owner = bool(config.OWNER_EMAIL and email == config.OWNER_EMAIL)
     with db.engine.begin() as c:
         if c.execute(sa.select(db.users.c.id).where(db.users.c.email == email)).first():
             raise AuthError("There is already an account with that email. Sign in instead.")
         first = c.execute(sa.select(sa.func.count()).select_from(db.users)).scalar() == 0
-        # Every new account is a normal user. Admins are made by hand on the server: python -m studio.admin grant <email>
         c.execute(db.users.insert().values(id=uid, email=email, name=name.strip()[:120], password_hash=password_hash,
-                                           google_sub=google_sub, is_admin=False, created_at=time.time()))
+                                           google_sub=google_sub, is_admin=is_owner, created_at=time.time()))
     config.user_dir(uid).mkdir(parents=True, exist_ok=True)
     if google_sub:
         mark_verified(uid)      # Google has already confirmed this address
@@ -333,7 +339,33 @@ def end_session(token: str):
 
 def cookie_args(token: str) -> dict:
     return {"key": COOKIE, "value": token, "max_age": config.SESSION_DAYS * 86400, "httponly": True,
-            "samesite": "lax", "secure": config.HTTPS, "path": "/"}
+            "samesite": "lax", "secure": config.SESSION_COOKIE_SECURE, "path": "/"}
+
+
+# ---------------------------------------------------------------- Cloudflare Turnstile bot verification
+def verify_turnstile(token: str, client_ip: str = "") -> bool:
+    """Verify Cloudflare Turnstile token against Cloudflare's siteverify API."""
+    if not config.TURNSTILE_ENABLED:
+        return True
+    if not config.TURNSTILE_SECRET_KEY:
+        return True
+    token = str(token or "").strip()
+    if not token:
+        return False
+    try:
+        data = {
+            "secret": config.TURNSTILE_SECRET_KEY,
+            "response": token,
+        }
+        if client_ip:
+            data["remoteip"] = client_ip
+        res = httpx.post("https://challenges.cloudflare.com/turnstile/v0/siteverify", data=data, timeout=10)
+        if res.status_code == 200:
+            result = res.json()
+            return bool(result.get("success"))
+        return False
+    except Exception:
+        return False
 
 
 # ---------------------------------------------------------------- Sign in with Google
@@ -341,7 +373,7 @@ def google_ready() -> bool:
     return all(config.google_client())
 
 
-def google_url(next_path: str = "/app") -> tuple:
+def google_url(next_path: str = "/app", cb_url: str = "") -> tuple:
     """(address to send the browser to, the one-time state to remember in that browser's cookie)."""
     cid, _ = config.google_client()
     state = secrets.token_urlsafe(24)
@@ -352,22 +384,24 @@ def google_url(next_path: str = "/app") -> tuple:
             for k in sorted(_states, key=lambda k: _states[k][0])[:2500]:
                 _states.pop(k, None)
         next_path = next_path[:200]
-        _states[state] = (time.time(), next_path if re.fullmatch(r"/(?![/\\])[^\\\t\r\n]*", next_path) else "/app")
+        eff_cb = cb_url or config.GOOGLE_CALLBACK_URL or (config.PUBLIC_URL + "/auth/google/callback")
+        _states[state] = (time.time(), next_path if re.fullmatch(r"/(?![/\\])[^\\\t\r\n]*", next_path) else "/app", eff_cb)
     return "https://accounts.google.com/o/oauth2/v2/auth?" + urlencode({
-        "client_id": cid, "redirect_uri": config.PUBLIC_URL + "/auth/google/callback", "response_type": "code",
+        "client_id": cid, "redirect_uri": eff_cb, "response_type": "code",
         "scope": "openid email profile", "state": state, "prompt": "select_account"}), state
 
 
-def google_finish(code: str, state: str):
+def google_finish(code: str, state: str, cb_url: str = ""):
     """Returns (user, is_first_user, next path)."""
     with _lock:
         st = _states.pop(state, None)
     if not st:
         raise AuthError("That sign-in link has expired. Try again.")
     cid, secret = config.google_client()
+    eff_cb = cb_url or (st[2] if len(st) > 2 else None) or config.GOOGLE_CALLBACK_URL or (config.PUBLIC_URL + "/auth/google/callback")
     tok = httpx.post("https://oauth2.googleapis.com/token", timeout=30, data={
         "code": code, "client_id": cid, "client_secret": secret, "grant_type": "authorization_code",
-        "redirect_uri": config.PUBLIC_URL + "/auth/google/callback"})
+        "redirect_uri": eff_cb})
     if tok.status_code != 200:
         raise AuthError("Google sign-in failed. Try again.")
     info = httpx.get("https://openidconnect.googleapis.com/v1/userinfo", timeout=30,

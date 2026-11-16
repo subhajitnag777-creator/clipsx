@@ -16,7 +16,7 @@ import threading
 
 import httpx
 
-from . import config
+from . import config, ctx
 
 AGENTROUTER_MODELS = ["gpt-6.1-sol", "gpt-6-astra", "gpt-5.6-sol"]
 
@@ -46,27 +46,44 @@ NO_KEY = {"ollama", "custom"}       # a model running on your own machine needs 
 
 # ---------------------------------------------------------------- the settings in use
 _lock = threading.Lock()
-_saved = {"at": None, "data": {}}
+_saved = {}  # uid -> {"at": timestamp, "data": dict}
 
 
-def _file():
+def _file(uid: str = None):
+    if not config.ACCOUNTS:
+        return config.DATA_DIR / "ai.json"
+    u = uid
+    if u is None:
+        try:
+            u = ctx.uid_or_none()
+        except Exception:
+            u = None
+    if u:
+        d = config.user_dir(u)
+        d.mkdir(parents=True, exist_ok=True)
+        return d / "ai.json"
     return config.DATA_DIR / "ai.json"
 
 
-def _from_dashboard() -> dict:
-    """What was saved from the dashboard, read again only when the file changes."""
-    f = _file()
+def _from_dashboard(uid: str = None) -> dict:
+    """What was saved from the dashboard for this user, read again only when their file changes."""
+    f = _file(uid)
+    if not f:
+        return {}
+    target_uid = uid or (ctx.uid_or_none() if config.ACCOUNTS else "_local") or "_local"
     try:
         at = f.stat().st_mtime_ns
     except OSError:
         at = 0
-    if _saved["at"] != at:
+    cache = _saved.get(target_uid, {"at": None, "data": {}})
+    if cache.get("at") != at:
         try:
             data = json.loads(f.read_text(encoding="utf-8")) if at else {}
         except (OSError, ValueError):
             data = {}
-        _saved.update(at=at, data=data if isinstance(data, dict) else {})
-    return _saved["data"]
+        cache = {"at": at, "data": data if isinstance(data, dict) else {}}
+        _saved[target_uid] = cache
+    return cache.get("data", {})
 
 
 def _clean_base(provider_id: str, address: str) -> str:
@@ -102,97 +119,130 @@ def _normalize_item(item: dict, idx: int = 0) -> dict:
     }
 
 
-def chain() -> list:
-    """Ordered list of configured AI providers for fallback."""
-    d = _from_dashboard()
-    items = []
+def chain(uid: str = None) -> list:
+    """Ordered list of configured AI providers for fallback for the current user."""
+    u = uid
+    if u is None:
+        try:
+            u = ctx.uid_or_none()
+        except Exception:
+            u = None
+
+    if u:
+        d = _from_dashboard(u)
+        items = []
+        if "chain" in d and isinstance(d["chain"], list):
+            for idx, it in enumerate(d["chain"]):
+                if isinstance(it, dict) and it.get("provider"):
+                    items.append(_normalize_item(it, idx))
+            return items
+        elif d.get("provider"):
+            items.append(_normalize_item(d, 0))
+            return items
+        elif d.get("cleared"):
+            return []
+        if config.ACCOUNTS and not config.DATA_DIR.name.startswith("pc-ai-"):
+            return []
+
+    d = _from_dashboard(None)
+    if d.get("cleared"):
+        return []
     if "chain" in d and isinstance(d["chain"], list):
+        items = []
         for idx, it in enumerate(d["chain"]):
             if isinstance(it, dict) and it.get("provider"):
                 items.append(_normalize_item(it, idx))
         return items
     elif d.get("provider"):
-        items.append(_normalize_item(d, 0))
-        return items
-    elif d.get("cleared"):
-        return []
-    else:
-        # Check env configs
-        cfg_json = config.env("CLIPSX_AI_CONFIGS") or config.env("PEAKCUT_AI_CONFIGS")
-        if cfg_json:
-            try:
-                parsed = json.loads(cfg_json)
-                if isinstance(parsed, list):
-                    for idx, it in enumerate(parsed):
-                        if isinstance(it, dict) and it.get("provider"):
-                            items.append(_normalize_item(it, idx))
-            except Exception:
-                pass
-        if not items:
-            # Check numbered env vars (1 to 9)
-            for i in range(1, 10):
-                p = config.env(f"CLIPSX_AI_PROVIDER_{i}") or config.env(f"PEAKCUT_AI_PROVIDER_{i}")
-                if p:
-                    ms = config.env(f"CLIPSX_AI_MODELS_{i}") or config.env(f"PEAKCUT_AI_MODELS_{i}") or ""
-                    k = config.env(f"CLIPSX_AI_KEY_{i}") or config.env(f"PEAKCUT_AI_KEY_{i}") or ""
-                    b = config.env(f"CLIPSX_AI_BASE_URL_{i}") or config.env(f"PEAKCUT_AI_BASE_URL_{i}") or ""
-                    items.append(_normalize_item({"provider": p, "models": ms.split(","), "key": k, "base_url": b}, len(items)))
-        if not items and (config.AI_PROVIDER or config.ai_key()):
-            items.append(_normalize_item({
-                "provider": config.AI_PROVIDER,
-                "models": list(config.AI_MODELS),
-                "key": config.ai_key(),
-                "base_url": config.AI_BASE_URL,
-            }, 0))
+        return [_normalize_item(d, 0)]
+
+    # Local single-user mode or fallback to env config for backwards compatibility & tests
+    items = []
+    cfg_json = config.env("CLIPSX_AI_CONFIGS") or config.env("PEAKCUT_AI_CONFIGS")
+    if cfg_json:
+        try:
+            parsed = json.loads(cfg_json)
+            if isinstance(parsed, list):
+                for idx, it in enumerate(parsed):
+                    if isinstance(it, dict) and it.get("provider"):
+                        items.append(_normalize_item(it, idx))
+        except Exception:
+            pass
+    if not items:
+        # Check numbered env vars (1 to 9)
+        for i in range(1, 10):
+            p = config.env(f"CLIPSX_AI_PROVIDER_{i}") or config.env(f"PEAKCUT_AI_PROVIDER_{i}")
+            if p:
+                ms = config.env(f"CLIPSX_AI_MODELS_{i}") or config.env(f"PEAKCUT_AI_MODELS_{i}") or ""
+                k = config.env(f"CLIPSX_AI_KEY_{i}") or config.env(f"PEAKCUT_AI_KEY_{i}") or ""
+                b = config.env(f"CLIPSX_AI_BASE_URL_{i}") or config.env(f"PEAKCUT_AI_BASE_URL_{i}") or ""
+                items.append(_normalize_item({"provider": p, "models": ms.split(","), "key": k, "base_url": b}, len(items)))
+    if not items and (config.AI_PROVIDER or config.ai_key()):
+        items.append(_normalize_item({
+            "provider": config.AI_PROVIDER,
+            "models": list(config.AI_MODELS),
+            "key": config.ai_key(),
+            "base_url": config.AI_BASE_URL,
+        }, 0))
     return items
 
 
-def current() -> dict:
-    """Active/primary provider, models, address and key."""
-    ch = chain()
+def current(uid: str = None) -> dict:
+    """Active/primary provider, models, address and key for this user."""
+    ch = chain(uid)
     for c in ch:
         if c["ready"]:
             return c
     return ch[0] if ch else _normalize_item({})
 
 
-def provider() -> str:
-    return current()["provider"]
+def provider(uid: str = None) -> str:
+    return current(uid)["provider"]
 
 
-def models() -> list:
-    return current()["models"]
+def models(uid: str = None) -> list:
+    return current(uid)["models"]
 
 
-def key() -> str:
-    return current()["key"]
+def key(uid: str = None) -> str:
+    return current(uid)["key"]
 
 
-def label() -> str:
-    return PROVIDERS.get(provider(), ("",))[0]
+def key_id(c=None, uid: str = None) -> str:
+    """A consistent hash ID of the active API key for per-key log filtering."""
+    import hashlib
+    k = (c["key"] if c and "key" in c else key(uid)) or ""
+    if not k:
+        return "none"
+    return hashlib.sha256(k.encode("utf-8")).hexdigest()[:16]
 
 
-def base_url() -> str:
-    return current()["base_url"] or PROVIDERS.get(current()["provider"], ("", ""))[1]
+def label(uid: str = None) -> str:
+    return PROVIDERS.get(provider(uid), ("",))[0]
 
 
-def ready() -> bool:
-    return any(c["ready"] for c in chain())
+def base_url(uid: str = None) -> str:
+    c = current(uid)
+    return c["base_url"] or PROVIDERS.get(c["provider"], ("", ""))[1]
 
 
-def public() -> dict:
-    """What the settings page may see."""
-    c = current()
-    ch = chain()
-    d = _from_dashboard()
+def ready(uid: str = None) -> bool:
+    return any(c["ready"] for c in chain(uid))
+
+
+def public(uid: str = None) -> dict:
+    """What the settings page may see. Never exposes complete API keys."""
+    ch = chain(uid)
+    c = ch[0] if ch else None
+    d = _from_dashboard(uid)
     return {
-        "provider": c["provider"],
-        "models": c["models"],
-        "base_url": c["base_url"],
-        "has_key": bool(c["key"]),
-        "key_hint": c["key"][-4:] if len(c["key"]) >= 12 else "",
-        "ready": ready(),
-        "label": label(),
+        "provider": c["provider"] if c else "",
+        "models": c["models"] if c else [],
+        "base_url": c["base_url"] if c else "",
+        "has_key": bool(c["key"]) if c else False,
+        "key_hint": c["key"][-4:] if (c and len(c["key"]) >= 8) else "",
+        "ready": ready(uid),
+        "label": c["label"] if c else "",
         "saved_here": bool(d.get("provider") or d.get("chain")),
         "providers": [
             {"id": k, "label": v[0], "address": v[1], "needs_key": k not in NO_KEY, "key_url": v[3], "example": v[4]}
@@ -206,7 +256,7 @@ def public() -> dict:
                 "models": x["models"],
                 "base_url": x["base_url"],
                 "has_key": bool(x["key"]),
-                "key_hint": x["key"][-4:] if len(x["key"]) >= 12 else "",
+                "key_hint": x["key"][-4:] if len(x["key"]) >= 8 else "",
                 "ready": x["ready"],
             }
             for x in ch
@@ -214,28 +264,38 @@ def public() -> dict:
     }
 
 
-def clear() -> dict:
-    """Delete the saved AI settings completely."""
+def clear(uid: str = None) -> dict:
+    """Delete the saved AI settings completely for the current user."""
+    f = _file(uid)
+    target_uid = uid or (ctx.uid_or_none() if config.ACCOUNTS else "_local") or "_local"
     with _lock:
-        f = _file()
-        tmp = f.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"chain": [], "cleared": True}), encoding="utf-8")
-        try:
-            os.chmod(tmp, 0o600)
-        except OSError:
-            pass
-        tmp.replace(f)
-        _saved["at"] = None
-    return public()
+        if f:
+            try:
+                f.parent.mkdir(parents=True, exist_ok=True)
+                f.write_text(json.dumps({"chain": [], "cleared": True}, indent=2), encoding="utf-8")
+                _saved[target_uid] = {"at": f.stat().st_mtime_ns, "data": {"chain": [], "cleared": True}}
+            except OSError:
+                if target_uid in _saved:
+                    _saved.pop(target_uid, None)
+        else:
+            if target_uid in _saved:
+                _saved.pop(target_uid, None)
+    try:
+        from . import usage
+        usage.forget(target_uid)
+        ctx.bump(target_uid)
+    except Exception:
+        pass
+    return public(uid)
 
 
-def save_chain(chain_data: list) -> dict:
-    """Save an ordered list of providers for fallback."""
+def save_chain(chain_data: list, uid: str = None) -> dict:
+    """Save an ordered list of providers for fallback for the current user."""
     if not isinstance(chain_data, list):
         raise ValueError("AI chain must be a list.")
     if len(chain_data) == 0:
-        return clear()
-    existing_items = chain()
+        return clear(uid)
+    existing_items = chain(uid)
     existing_by_id = {c["id"]: c.get("key", "") for c in existing_items if c.get("id")}
     existing_by_provider = {c["provider"]: c.get("key", "") for c in existing_items}
     validated = []
@@ -260,7 +320,7 @@ def save_chain(chain_data: list) -> dict:
             raise ValueError("A custom service needs its address, for example http://127.0.0.1:1234/v1")
         item_id = str(item.get("id") or "").strip()
         new_k = item.get("key")
-        if new_k is not None and str(new_k).strip():
+        if new_k is not None and str(new_k).strip() and not str(new_k).strip().startswith("..."):
             k = str(new_k).strip()[:400]
         elif item.get("clear_key") or item.get("remove_key"):
             k = ""
@@ -274,10 +334,14 @@ def save_chain(chain_data: list) -> dict:
         card_id = item_id or f"card_{idx}_{p}"
         validated.append({"id": card_id, "provider": p, "models": ms, "base_url": b, "key": k})
     if not validated:
-        return clear()
+        return clear(uid)
     primary = validated[0]
+    f = _file(uid)
+    if not f:
+        raise ValueError("Cannot save AI configuration without an active account.")
+    target_uid = uid or (ctx.uid_or_none() if config.ACCOUNTS else "_local") or "_local"
     with _lock:
-        f = _file()
+        f.parent.mkdir(parents=True, exist_ok=True)
         tmp = f.with_suffix(".tmp")
         tmp.write_text(json.dumps({
             "chain": validated,
@@ -285,20 +349,27 @@ def save_chain(chain_data: list) -> dict:
             "models": primary["models"],
             "base_url": primary["base_url"],
             "key": primary["key"],
-        }), encoding="utf-8")
+        }, indent=2), encoding="utf-8")
         try:
             os.chmod(tmp, 0o600)
         except OSError:
             pass
         tmp.replace(f)
-        _saved["at"] = None
-    return public()
+        if target_uid in _saved:
+            _saved.pop(target_uid, None)
+    try:
+        from . import usage
+        usage.forget(target_uid)
+        ctx.bump(target_uid)
+    except Exception:
+        pass
+    return public(uid)
 
 
-def save(provider_id: str, model_ids, address: str = "", new_key=None, chain_data=None) -> dict:
-    """Save provider choices. Accepts either single provider parameters or full chain_data list."""
+def save(provider_id: str, model_ids, address: str = "", new_key=None, chain_data=None, uid: str = None) -> dict:
+    """Save provider choices for this user."""
     if chain_data:
-        return save_chain(chain_data)
+        return save_chain(chain_data, uid=uid)
     p = ALIASES.get(str(provider_id or "").strip().lower(), str(provider_id or "").strip().lower())
     if p not in PROVIDERS:
         raise ValueError("Choose one of the AI services in the list.")
@@ -314,22 +385,12 @@ def save(provider_id: str, model_ids, address: str = "", new_key=None, chain_dat
         raise ValueError("The address has to start with http:// or https://")
     if p == "custom" and not address:
         raise ValueError("A custom service needs its address, for example http://127.0.0.1:1234/v1")
-    old = current()
+    old = current(uid)
     k = old["key"] if new_key is None and old["provider"] == p else str(new_key or "").strip()[:400]
     if not k and p not in NO_KEY:
         raise ValueError("Paste the key for this service.")
     entry = {"provider": p, "models": ms, "base_url": address, "key": k}
-    with _lock:
-        f = _file()
-        tmp = f.with_suffix(".tmp")
-        tmp.write_text(json.dumps({"chain": [entry], "provider": p, "models": ms, "base_url": address, "key": k}), encoding="utf-8")
-        try:
-            os.chmod(tmp, 0o600)
-        except OSError:
-            pass
-        tmp.replace(f)
-        _saved["at"] = None
-    return public()
+    return save_chain([entry], uid=uid)
 
 
 def list_models(provider_id=None, address=None, with_key=None, item_id=None, idx=None) -> list:
@@ -393,32 +454,45 @@ def list_models(provider_id=None, address=None, with_key=None, item_id=None, idx
     return sorted({m for m in found if m})[:400]
 
 
-def test(cfg=None) -> dict:
+def test(cfg=None, uid=None) -> dict:
     """One tiny request with the settings in use, to prove the key, the address and the model all work."""
-    c = cfg or current()
+    c = cfg or current(uid)
     ms = c.get("models") or []
     if not c or not c.get("ready") or not ms:
-        raise ValueError(f"Save a valid service, model and key for {c.get('label') or 'the AI'} first.")
-    out, sent, wrote = call(ms[0], 'Answer with a JSON array that holds the single string "ok".',
-                            {"type": "ARRAY", "items": {"type": "STRING"}}, cfg=c)
-    return {"ok": True, "provider": c.get("label"), "model": ms[0], "tokens": sent + wrote, "answer": str(out)[:80]}
+        raise ValueError(f"Save a valid service, model and API key for {c.get('label') or 'the AI'} first.")
+    import time
+    t0 = time.time()
+    try:
+        out, sent, wrote = call(ms[0], 'Answer with a JSON array that holds the single string "ok".',
+                                {"type": "ARRAY", "items": {"type": "STRING"}}, cfg=c)
+        lat = int((time.time() - t0) * 1000)
+        return {
+            "ok": True,
+            "provider": c.get("label"),
+            "model": ms[0],
+            "tokens": sent + wrote,
+            "latency_ms": lat,
+            "message": f"Connection to {c.get('label')} ({ms[0]}) successful ({lat}ms)."
+        }
+    except Exception as e:
+        raise AIError(explain(e) or str(e))
 
 
-def test_all() -> dict:
+def test_all(uid=None) -> dict:
     """Test all configured services in the fallback chain."""
     results = []
-    ch = chain()
+    ch = chain(uid)
     if not ch:
-        return {"ok": False, "results": [], "error": "No AI services configured."}
+        return {"ok": False, "results": [], "error": "No AI services configured. Please add an API key in Settings."}
     for c in ch:
         if not c["ready"]:
-            results.append({"provider": c.get("label"), "ok": False, "error": "Not configured"})
+            results.append({"provider": c.get("label"), "ok": False, "error": "Incomplete configuration or missing API key."})
             continue
         try:
-            r = test(c)
-            results.append({"provider": c.get("label"), "model": c["models"][0], "ok": True, "tokens": r["tokens"]})
+            r = test(c, uid)
+            results.append({"provider": c.get("label"), "model": c["models"][0], "ok": True, "tokens": r["tokens"], "latency_ms": r.get("latency_ms", 0), "message": r.get("message")})
         except Exception as e:
-            results.append({"provider": c.get("label"), "model": (c.get("models") or [""])[0], "ok": False, "error": str(e)})
+            results.append({"provider": c.get("label"), "model": (c.get("models") or [""])[0], "ok": False, "error": explain(e) or str(e)})
     return {"ok": any(r["ok"] for r in results), "results": results}
 
 
@@ -430,18 +504,45 @@ problem = {"text": "", "at": 0.0}       # why the AI last failed, for the dashbo
 
 
 def explain(e) -> str:
-    """What went wrong with an AI call, in words the owner can act on."""
+    """Accurately maps AI errors to specific, actionable failure causes."""
+    if not e:
+        return ""
     text, low = str(e), str(e).lower()
-    name = (models() or ["?"])[0]
-    lbl = label()
-    if "404" in text or "not found" in low or "does not exist" in low or "unknown model" in low or "not_found" in low:
-        return f"{lbl} doesn't know the model \"{name}\". Open Settings, AI, press Find models and pick one from the list."
-    if "401" in text or "403" in text or "api key" in low or "api_key" in low or "unauthorized" in low or "permission" in low:
-        return f"{lbl} refused the key. Paste a working key under Settings, AI."
-    if "429" in text or "quota" in low or "rate limit" in low or "exhausted" in low:
-        return f"{lbl} says the key has hit its limit or has no credit left. Check the account with {lbl}, or try again later."
-    if "connect" in low or "timed out" in low or "timeout" in low or "getaddrinfo" in low or "refused" in low:
-        return f"Clips X couldn't reach {lbl}. Check the internet connection" + (" and that Ollama is running." if provider() == "ollama" else ".")
+    
+    # 1. Unknown model name (HTTP 404, model not found, etc.)
+    if "not found" in low or "does not exist" in low or "unknown model" in low or "404" in text:
+        m = re.search(r"models/([\w.\-]+)|model[ '`\"]+([\w.\-]+)[ '`\"]+is not found|model called '([^']+)'", text, re.I)
+        name = ""
+        if m:
+            name = m.group(1) or m.group(2) or m.group(3) or ""
+        if name:
+            return f"The service doesn't have a model called '{name}'. Click Find models in Settings to pick one."
+        return "The selected AI model is unavailable. Click Find models in Settings to pick one."
+
+    # 2. Invalid / refused API key (HTTP 400 key not valid, 401, 403, etc.)
+    if "api key not valid" in low or "invalid api key" in low or "invalid_api_key" in low or "refused the key" in low or "incorrect api key" in low or "unauthorized" in low or "forbidden" in low or "401" in text or "403" in text or ("400" in text and "key" in low):
+        return "The service refused the key. Check for typos, or make a new key at the service's own website."
+
+    # 3. Rate limit / quota (HTTP 429, quota exceeded, etc.)
+    if "quota" in low or "rate limit" in low or "rate_limit" in low or "429" in text or "too many requests" in low or "exhausted" in low:
+        return "The service's usage or rate limit was reached. Check your quota or switch providers in Settings."
+
+    # 4. Request timeout
+    if "timed out" in low or "timeout" in low:
+        return "The AI request timed out. Please try again."
+
+    # 5. Network failure / connection error (getaddrinfo failed, econnrefused, etc.)
+    if "getaddrinfo" in low or "econnrefused" in low or "connection" in low or "connect" in low or "network" in low:
+        return "Clips X couldn't reach the AI service. Check your internet connection or try again shortly."
+
+    # 6. API key missing
+    if "no key" in low or "key missing" in low or "not set up" in low or "no ai service is ready" in low or "please add your api key" in low:
+        return "Please add your API key in Settings before generating clips. Then try again."
+
+    # 7. Clip processing failure
+    if "json" in low or "failed to parse" in low:
+        return "The AI returned an invalid response. Please try again."
+
     return ""
 
 
@@ -459,7 +560,6 @@ def clear_problem():
 def _fail(r, model, auth_key=None):
     k = auth_key or key() or "\0"
     text = r.text[:300].replace(k, "<key>")
-    raise AIError(f"HTTP {r.status_code} {text}")
     raise AIError(f"HTTP {r.status_code} {text}")
 
 
@@ -506,6 +606,15 @@ def call(model: str, prompt: str, schema: dict, cfg: dict = None):
     return fn(model, prompt, schema, base=c.get("base_url"), auth_key=c.get("key"))
 
 
+def _post(*a, **k):
+    try:
+        return httpx.post(*a, **k)
+    except (httpx.TimeoutException, httpx.ReadTimeout, httpx.ConnectTimeout) as e:
+        raise AIError(f"The AI request timed out. Please try again. ({e})")
+    except (httpx.NetworkError, httpx.ConnectError) as e:
+        raise AIError(f"Unable to connect to the AI service. Please retry. ({e})")
+
+
 def _agentrouter(model, prompt, schema, base=None, auth_key=None):
     b = (base or base_url()).rstrip("/")
     if "agentrouter.org" in b and not b.endswith("/v1"):
@@ -518,7 +627,7 @@ def _agentrouter(model, prompt, schema, base=None, auth_key=None):
     }
     wrapped = _wrapped(prompt, schema)
     # AgentRouter models (gpt-6.1-sol, gpt-6-astra, gpt-5.6-sol) speak the OpenAI Responses API
-    r = httpx.post(f"{b}/responses", json={"model": model, "input": wrapped}, headers=headers, timeout=180)
+    r = _post(f"{b}/responses", json={"model": model, "input": wrapped}, headers=headers, timeout=180)
     if r.status_code == 200:
         data = r.json()
         text = ""
@@ -540,7 +649,7 @@ def _agentrouter(model, prompt, schema, base=None, auth_key=None):
     # Fallback to chat/completions if /responses is not supported
     if r.status_code in (400, 404, 405):
         body_chat = {"model": model, "messages": [{"role": "user", "content": wrapped}]}
-        r_chat = httpx.post(f"{b}/chat/completions", json=body_chat, headers=headers, timeout=180)
+        r_chat = _post(f"{b}/chat/completions", json=body_chat, headers=headers, timeout=180)
         if r_chat.status_code == 200:
             data = r_chat.json()
             u = data.get("usage") or {}
@@ -555,7 +664,7 @@ def _gemini(model, prompt, schema, base=None, auth_key=None):
     k = auth_key if auth_key is not None else key()
     body = {"contents": [{"role": "user", "parts": [{"text": prompt}]}],
             "generationConfig": {"temperature": 0.4, "responseMimeType": "application/json", "responseSchema": schema}}
-    r = httpx.post(f"{b}/{model}:generateContent", json=body, headers={"x-goog-api-key": k}, timeout=120)
+    r = _post(f"{b}/{model}:generateContent", json=body, headers={"x-goog-api-key": k}, timeout=120)
     if r.status_code != 200:
         _fail(r, model, k)
     data = r.json()
@@ -575,7 +684,7 @@ def _openai(model, prompt, schema, base=None, auth_key=None):
     extras = [{"temperature": 0.4, "response_format": {"type": "json_object"}}, {"response_format": {"type": "json_object"}}, {}]
     r = None
     for extra in extras:
-        r = httpx.post(f"{b}/chat/completions", json={**body, **extra}, headers=headers, timeout=180)
+        r = _post(f"{b}/chat/completions", json={**body, **extra}, headers=headers, timeout=180)
         if r.status_code not in (400, 422):
             break
     if r.status_code != 200:
@@ -589,8 +698,8 @@ def _anthropic(model, prompt, schema, base=None, auth_key=None):
     b = (base or base_url()).rstrip("/")
     k = auth_key if auth_key is not None else key()
     body = {"model": model, "max_tokens": 8192, "messages": [{"role": "user", "content": _wrapped(prompt, schema)}]}
-    r = httpx.post(f"{b}/messages", json=body, timeout=180,
-                   headers={"x-api-key": k, "anthropic-version": "2023-06-01"})
+    r = _post(f"{b}/messages", json=body, timeout=180,
+              headers={"x-api-key": k, "anthropic-version": "2023-06-01"})
     if r.status_code != 200:
         _fail(r, model, k)
     data = r.json()

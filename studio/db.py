@@ -55,6 +55,7 @@ usage = sa.Table(                                                             # 
     sa.Column("purpose", sa.String(60), nullable=False),
     sa.Column("creator", sa.String(80)),
     sa.Column("place", sa.String(200)),
+    sa.Column("key_id", sa.String(32), nullable=False, server_default=""),
     sa.Index("usage_user_t", "user_id", "t"),
 )
 
@@ -114,6 +115,11 @@ admin_log = sa.Table(                                                         # 
 
 def init():
     meta.create_all(engine)
+    with engine.begin() as conn:
+        try:
+            conn.execute(sa.text("ALTER TABLE usage ADD COLUMN key_id VARCHAR(32) DEFAULT ''"))
+        except Exception:
+            pass
 
 
 def now() -> float:

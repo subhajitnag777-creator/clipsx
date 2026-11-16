@@ -1,25 +1,37 @@
-# Clips X: one image with the web server, the clip pipeline and ffmpeg.
+# syntax=docker/dockerfile:1
 FROM python:3.11-slim
 
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg ca-certificates bzip2 fonts-noto-core fonts-noto-cjk \
- && rm -rf /var/lib/apt/lists/*
-# yt-dlp needs a JavaScript runtime for YouTube
-COPY --from=denoland/deno:bin /deno /usr/local/bin/deno
+# Install system dependencies (FFmpeg, git, build essentials)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    curl \
+    git \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-COPY studio studio
-COPY web web
 
-ENV CLIPSX_DATA=/data \
-    CLIPSX_HOST=0.0.0.0 \
-    CLIPSX_PORT=8765 \
-    CLIPSX_TRUST_PROXY=1 \
-    PYTHONUNBUFFERED=1
-VOLUME /data
+# Copy dependency requirements
+COPY requirements.txt .
+
+# Install Python packages
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application source
+COPY . .
+
+# Environment defaults
+ENV PYTHONUNBUFFERED=1 \
+    PORT=8765 \
+    HOST=0.0.0.0 \
+    CLIPSX_FETCH_MODEL=0 \
+    CLIPSX_UPDATE_CHECK=0
+
 EXPOSE 8765
-HEALTHCHECK --interval=30s --timeout=5s --start-period=120s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=4)"
-# the first start downloads the speech model into /data/models by itself (about 480 MB)
+
+# Healthcheck
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -f http://127.0.0.1:8765/healthz || exit 1
+
+# Start Clips X Studio
 CMD ["python", "-m", "studio.server"]

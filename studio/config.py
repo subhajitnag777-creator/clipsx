@@ -22,33 +22,75 @@ def _load_dotenv():
 _load_dotenv()
 
 
+_ALIASES = {
+    "PORT": ("CLIPSX_PORT", "PEAKCUT_PORT"),
+    "HOST": ("CLIPSX_HOST", "PEAKCUT_HOST"),
+    "APP_URL": ("CLIPSX_PUBLIC_URL", "PEAKCUT_PUBLIC_URL", "PUBLIC_URL"),
+    "PUBLIC_URL": ("APP_URL", "CLIPSX_PUBLIC_URL", "PEAKCUT_PUBLIC_URL"),
+    "ADMIN_EMAIL": ("CLIPSX_OWNER_EMAIL", "PEAKCUT_OWNER_EMAIL", "OWNER_EMAIL"),
+    "CLIPSX_OWNER_EMAIL": ("ADMIN_EMAIL", "PEAKCUT_OWNER_EMAIL", "OWNER_EMAIL"),
+    "PEAKCUT_OWNER_EMAIL": ("ADMIN_EMAIL", "CLIPSX_OWNER_EMAIL", "OWNER_EMAIL"),
+    "DATABASE_URL": ("CLIPSX_DATABASE_URL", "PEAKCUT_DATABASE_URL"),
+    "SMTP_HOST": ("CLIPSX_SMTP_HOST", "PEAKCUT_SMTP_HOST"),
+    "PEAKCUT_SMTP_HOST": ("SMTP_HOST", "CLIPSX_SMTP_HOST"),
+    "SMTP_PORT": ("CLIPSX_SMTP_PORT", "PEAKCUT_SMTP_PORT"),
+    "PEAKCUT_SMTP_PORT": ("SMTP_PORT", "CLIPSX_SMTP_PORT"),
+    "SMTP_USER": ("CLIPSX_SMTP_USER", "PEAKCUT_SMTP_USER"),
+    "PEAKCUT_SMTP_USER": ("SMTP_USER", "CLIPSX_SMTP_USER"),
+    "SMTP_PASSWORD": ("CLIPSX_SMTP_PASSWORD", "PEAKCUT_SMTP_PASSWORD"),
+    "PEAKCUT_SMTP_PASSWORD": ("SMTP_PASSWORD", "CLIPSX_SMTP_PASSWORD"),
+    "SMTP_FROM": ("MAIL_FROM", "CLIPSX_MAIL_FROM", "PEAKCUT_MAIL_FROM"),
+    "MAIL_FROM": ("SMTP_FROM", "CLIPSX_MAIL_FROM", "PEAKCUT_MAIL_FROM"),
+    "PEAKCUT_MAIL_FROM": ("SMTP_FROM", "MAIL_FROM", "CLIPSX_MAIL_FROM"),
+    "VERIFY_EMAIL": ("CLIPSX_VERIFY_EMAIL", "PEAKCUT_VERIFY_EMAIL"),
+    "PEAKCUT_VERIFY_EMAIL": ("VERIFY_EMAIL", "CLIPSX_VERIFY_EMAIL"),
+    "SESSION_DAYS": ("CLIPSX_SESSION_DAYS", "PEAKCUT_SESSION_DAYS"),
+    "PEAKCUT_SESSION_DAYS": ("SESSION_DAYS", "CLIPSX_SESSION_DAYS"),
+    "SESSION_SECRET": ("JWT_SECRET", "CLIPSX_SESSION_SECRET", "PEAKCUT_SESSION_SECRET"),
+    "JWT_SECRET": ("SESSION_SECRET", "CLIPSX_SESSION_SECRET"),
+    "SESSION_COOKIE_SECURE": ("CLIPSX_SESSION_COOKIE_SECURE", "PEAKCUT_SESSION_COOKIE_SECURE"),
+    "TURNSTILE_SITE_KEY": ("CLIPSX_TURNSTILE_SITE_KEY", "PEAKCUT_TURNSTILE_SITE_KEY"),
+    "TURNSTILE_SECRET_KEY": ("CLIPSX_TURNSTILE_SECRET_KEY", "PEAKCUT_TURNSTILE_SECRET_KEY"),
+    "TURNSTILE_ENABLED": ("CLIPSX_TURNSTILE_ENABLED", "PEAKCUT_TURNSTILE_ENABLED"),
+    "ACCOUNTS": ("CLIPSX_ACCOUNTS", "PEAKCUT_ACCOUNTS"),
+    "PEAKCUT_ACCOUNTS": ("CLIPSX_ACCOUNTS", "ACCOUNTS"),
+    "CLIPSX_ACCOUNTS": ("PEAKCUT_ACCOUNTS", "ACCOUNTS"),
+    "PEAKCUT_IG_APP_ID": ("CLIPSX_IG_APP_ID", "IG_APP_ID", "INSTAGRAM_APP_ID"),
+    "CLIPSX_IG_APP_ID": ("PEAKCUT_IG_APP_ID", "IG_APP_ID", "INSTAGRAM_APP_ID"),
+    "PEAKCUT_IG_APP_SECRET": ("CLIPSX_IG_APP_SECRET", "IG_APP_SECRET", "INSTAGRAM_APP_SECRET"),
+    "CLIPSX_IG_APP_SECRET": ("PEAKCUT_IG_APP_SECRET", "IG_APP_SECRET", "INSTAGRAM_APP_SECRET"),
+    "PEAKCUT_TIKTOK_CLIENT_KEY": ("CLIPSX_TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_KEY"),
+    "CLIPSX_TIKTOK_CLIENT_KEY": ("PEAKCUT_TIKTOK_CLIENT_KEY", "TIKTOK_CLIENT_KEY"),
+    "PEAKCUT_TIKTOK_CLIENT_SECRET": ("CLIPSX_TIKTOK_CLIENT_SECRET", "TIKTOK_CLIENT_SECRET"),
+    "CLIPSX_TIKTOK_CLIENT_SECRET": ("PEAKCUT_TIKTOK_CLIENT_SECRET", "TIKTOK_CLIENT_SECRET"),
+}
+
+
 def env(name: str, default: str = None) -> str:
-    """Read an environment variable, supporting CLIPSX_, CLIPS_X_ and PEAKCUT_ prefixes interchangeably."""
-    if name.startswith("PEAKCUT_"):
-        suffix = name[len("PEAKCUT_"):]
-        val = os.environ.get(f"CLIPSX_{suffix}")
+    """Read an environment variable, checking direct name, aliases, and cross-prefix variants."""
+    val = os.environ.get(name)
+    if val is not None:
+        return val
+    for alt in _ALIASES.get(name, ()):
+        val = os.environ.get(alt)
         if val is not None:
             return val
-        val = os.environ.get(f"CLIPS_X_{suffix}")
+    if name.startswith("PEAKCUT_"):
+        suffix = name[len("PEAKCUT_"):]
+        val = os.environ.get(f"CLIPSX_{suffix}") or os.environ.get(f"CLIPS_X_{suffix}") or os.environ.get(suffix)
         if val is not None:
             return val
     elif name.startswith("CLIPSX_"):
         suffix = name[len("CLIPSX_"):]
-        val = os.environ.get(name)
-        if val is not None:
-            return val
-        val = os.environ.get(f"CLIPS_X_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}")
+        val = os.environ.get(f"CLIPS_X_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}") or os.environ.get(suffix)
         if val is not None:
             return val
     elif name.startswith("CLIPS_X_"):
         suffix = name[len("CLIPS_X_"):]
-        val = os.environ.get(name)
+        val = os.environ.get(f"CLIPSX_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}") or os.environ.get(suffix)
         if val is not None:
             return val
-        val = os.environ.get(f"CLIPSX_{suffix}") or os.environ.get(f"PEAKCUT_{suffix}")
-        if val is not None:
-            return val
-    return os.environ.get(name, default)
+    return default
 
 
 _kept: dict = {}
@@ -156,7 +198,7 @@ YT_TRANSCRIPT = env("PEAKCUT_YT_TRANSCRIPT", "1") != "0"
 ASR_MODEL_NAME = env("PEAKCUT_ASR_MODEL", "sherpa-onnx-nemo-parakeet-tdt-0.6b-v2-int8")
 ASR_MODEL_DIR = MODELS_DIR / ASR_MODEL_NAME
 DATABASE_URL = env("DATABASE_URL") or (
-    f"sqlite:///{(DATA_DIR / 'peakcut.db').as_posix()}" if (DATA_DIR / "peakcut.db").exists() and not (DATA_DIR / "clipsx.db").exists()
+    f"sqlite:///{(DATA_DIR / 'peakcut.db').as_posix()}" if (DATA_DIR / "peakcut.db").exists()
     else f"sqlite:///{(DATA_DIR / 'clipsx.db').as_posix()}"
 )
 
@@ -180,10 +222,10 @@ SESSION_DAYS = int(env("PEAKCUT_SESSION_DAYS", "30"))
 # on your own computer. On a server that other people can reach, set CLIPSX_ACCOUNTS=1: everyone then signs up
 # and signs in, and each person only sees their own videos.
 ACCOUNTS = env("PEAKCUT_ACCOUNTS", "0") == "1"
-# The two buttons along the top of the dashboard: the project's code, and where to follow its maker (feedback goes
-# there too). Set either to an empty value to hide that button, or point them at your own pages in a fork.
-REPO_URL = env("CLIPSX_REPO_URL", env("PEAKCUT_REPO_URL", "https://github.com/haziqahmedqasmi/peakcut")).strip()
-FOLLOW_URL = env("CLIPSX_FOLLOW_URL", env("PEAKCUT_FOLLOW_URL", "https://www.instagram.com/haziq.builds/")).strip()
+OWNER_EMAIL = (env("CLIPSX_OWNER_EMAIL") or env("PEAKCUT_OWNER_EMAIL") or "").strip().lower()
+# The two buttons along the top of the dashboard: empty by default so no third-party links are displayed.
+REPO_URL = env("CLIPSX_REPO_URL", env("PEAKCUT_REPO_URL", "")).strip()
+FOLLOW_URL = env("CLIPSX_FOLLOW_URL", env("PEAKCUT_FOLLOW_URL", "")).strip()
 
 # ---------------------------------------------------------------- limits (per user, and for the whole server)
 # Your own Clips X has no limits unless you set them: 0 (the default) means "none" for every limit below. The
@@ -214,7 +256,7 @@ ALLOWED_SITES = tuple(s.strip().lower() for s in env(
 
 # ---------------------------------------------------------------- AI (bring your own key: see studio/ai.py)
 # These are the starting values. Whatever is saved from the dashboard (Settings, AI) is used instead.
-AI_PROVIDER = env("PEAKCUT_AI_PROVIDER", "gemini").strip().lower()            # gemini, openai, xai, groq, openrouter, anthropic, ollama, custom
+AI_PROVIDER = env("CLIPSX_AI_PROVIDER", env("PEAKCUT_AI_PROVIDER", "")).strip().lower()            # gemini, openai, xai, groq, openrouter, anthropic, ollama, custom
 AI_MODELS = [m.strip() for m in env("PEAKCUT_AI_MODELS", "").split(",") if m.strip()]   # tried in this order
 AI_BASE_URL = env("PEAKCUT_AI_BASE_URL", "").rstrip("/")                      # only for "custom", or to override a provider's address
 
@@ -244,6 +286,31 @@ def smtp_password() -> str:
     return _secret("PEAKCUT_SMTP_PASSWORD", "PEAKCUT_SMTP_PASSWORD_FILE", r"\S{4,}")
 
 
+# ---------------------------------------------------------------- Cloudflare & Bot Protection
+CLOUDFLARE_ACCOUNT_ID = env("CLOUDFLARE_ACCOUNT_ID", "").strip()
+CLOUDFLARE_ZONE_ID = env("CLOUDFLARE_ZONE_ID", "").strip()
+CLOUDFLARE_API_TOKEN = env("CLOUDFLARE_API_TOKEN", "").strip()
+TURNSTILE_SITE_KEY = env("TURNSTILE_SITE_KEY", "").strip()
+TURNSTILE_SECRET_KEY = env("TURNSTILE_SECRET_KEY", "").strip()
+TURNSTILE_ENABLED = env("TURNSTILE_ENABLED", "false").strip().lower() in ("1", "true", "yes", "on")
+
+# ---------------------------------------------------------------- session & cookie security
+SESSION_SECRET = env("SESSION_SECRET", env("JWT_SECRET", "")).strip()
+_cookie_sec = env("SESSION_COOKIE_SECURE")
+SESSION_COOKIE_SECURE = (_cookie_sec.strip().lower() in ("1", "true", "yes", "on")) if _cookie_sec is not None else HTTPS
+
+# ---------------------------------------------------------------- rate limiting (configurable via .env)
+LOGIN_RATE_LIMIT_MAX = int(env("LOGIN_RATE_LIMIT_MAX", "5"))
+LOGIN_RATE_LIMIT_WINDOW = int(env("LOGIN_RATE_LIMIT_WINDOW_MINUTES", "15")) * 60
+REGISTER_RATE_LIMIT_MAX = int(env("REGISTER_RATE_LIMIT_MAX", "3"))
+REGISTER_RATE_LIMIT_WINDOW = int(env("REGISTER_RATE_LIMIT_WINDOW_MINUTES", "60")) * 60
+PASSWORD_RESET_RATE_LIMIT_MAX = int(env("PASSWORD_RESET_RATE_LIMIT_MAX", "3"))
+PASSWORD_RESET_RATE_LIMIT_WINDOW = int(env("PASSWORD_RESET_RATE_LIMIT_WINDOW_MINUTES", "60")) * 60
+
+# ---------------------------------------------------------------- Google OAuth
+GOOGLE_CALLBACK_URL = env("GOOGLE_CALLBACK_URL", f"{PUBLIC_URL}/auth/google/callback").strip()
+
+
 # ---------------------------------------------------------------- Google (sign in with Google, and connecting YouTube)
 def google_client() -> tuple:
     """(client id, client secret). Either GOOGLE_CLIENT_ID/SECRET, or GOOGLE_CLIENT_FILE = the JSON Google lets you download."""
@@ -262,6 +329,16 @@ def _read_google_client() -> tuple:
         except ValueError:
             pass
     return "", ""
+
+
+def validate_config() -> list:
+    """Check configuration health on startup without ever leaking secrets in logs."""
+    notices = []
+    if TURNSTILE_ENABLED and not TURNSTILE_SECRET_KEY:
+        notices.append("Turnstile is enabled but TURNSTILE_SECRET_KEY is empty.")
+    if ACCOUNTS and not OWNER_EMAIL:
+        notices.append("Accounts enabled but no ADMIN_EMAIL / CLIPSX_OWNER_EMAIL set.")
+    return notices
 
 
 # ---------------------------------------------------------------- video

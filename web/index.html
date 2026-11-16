@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Clips X</title>
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="/brand/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Inter:wght@300&family=Archivo+Black&family=Anton&family=Poppins:wght@800&display=swap" rel="stylesheet">
@@ -813,7 +815,7 @@ dialog[open]{animation:fadein .16s ease}
 <body>
 <div class="app" id="app">
   <aside class="side" aria-label="Sidebar">
-    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=clipsx" alt="Clips X"><img class="mark" src="/brand/favicon.svg?v=clipsx" alt="Clips X">
+    <div class="side-head"><img class="logo" src="/brand/logo-light.svg?v=clipsx3" alt="Clips X"><img class="mark" src="/brand/favicon.svg?v=clipsx3" alt="Clips X">
       <button class="icon-btn collapse" data-act="collapse" id="collapseBtn" aria-label="Collapse sidebar"></button></div>
     <nav class="nav" id="nav" aria-label="Main"></nav>
     <div class="side-foot" id="foot"></div>
@@ -1253,7 +1255,7 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
       c.live_job ? `<span class="sb-tag rec" title="Recording now"><i></i>Rec</span>`
         : liveOn(c).length ? `<span class="sb-tag" title="Live on ${esc(liveOn(c).map(([k]) => PLAT[k].name).join(" and "))}"><i></i>Live</span>` : "")).join("") +
     `<button class="nav-item" data-act="newcreator" title="New creator">${ic("plusc")}<span class="label">New creator</span></button>` +
-    (S.status.user?.role === "admin" && S.status.accounts !== false ? `<h4><span>Owner</span></h4><a class="nav-item" href="/admin" title="Admin dashboard" style="text-decoration:none">${ic("shield")}<span class="label">Admin dashboard</span></a>` : ""));
+    (S.status.user?.is_owner && S.status.accounts !== false ? `<h4><span>Owner</span></h4><a class="nav-item" href="/admin" title="Admin dashboard" style="text-decoration:none">${ic("shield")}<span class="label">Admin dashboard</span></a>` : ""));
   const st = S.status;
   const k = S.status.ai;
   put($("#foot"), (k ? `<button class="ai-card ${S.view === "usage" ? "on" : ""}" data-act="go" data-v="usage" title="${k.ready ? `AI: ${esc(k.provider || "ready")}, ${k.today_calls || 0} calls today` : "The AI is not set up"}">
@@ -1288,10 +1290,10 @@ function drawShell() {  const nav = (v, icon, label, extra = "") => `<button cla
   const upBar = up && up.latest !== upSeen ? `<div class="vb" role="status">${ic("up")}<span>${up.restart ? "<b>The new version is downloaded.</b> Close Clips X and start it again to use it." : `A new version of Clips X is out${up.behind ? `: <b>${up.behind} update${up.behind === 1 ? "" : "s"}</b> since yours` : ""}.`}</span>
     <button class="btn sm primary" data-act="updhow">${up.restart ? "What's new" : "How to update"}</button><button class="btn sm ghost" data-act="updlater" aria-label="Hide until the next version">Later</button></div>` : "";
   const toolBar = S.status.no_ffmpeg ? `<div class="vb" role="alert">${ic("warn")}<span><b>Clips X can't make clips yet: ffmpeg isn't installed on this computer.</b> Open a terminal, run <code>winget install Gyan.FFmpeg</code> (Mac: <code>brew install ffmpeg</code>, Linux: <code>sudo apt install ffmpeg</code>), then close Clips X and start it again.</span></div>` : "";
-  const aiBar = !toolBar && S.status.ai?.problem && me?.is_admin && S.view !== "settings" ? `<div class="vb" role="status">${ic("warn")}<span><b>The AI isn't answering.</b> ${esc(S.status.ai.problem)} Until then, clips are picked by loudness.</span><button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">Open AI settings</button></div>` : "";
+  const aiBar = !toolBar && S.status.ai?.problem && S.view !== "settings" ? `<div class="vb" role="status">${ic("warn")}<span><b>The AI isn't answering.</b> ${esc(S.status.ai.problem)} Please check your AI settings.</span><button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">Open AI settings</button></div>` : "";
   const diskBar = !toolBar && S.status.disk_full && S.view !== "settings" ? `<div class="vb" role="alert">${ic("warn")}<span><b>The drive Clips X saves to is almost full, so it can't take new videos.</b> Free up space on it, or move Clips X's folder to a bigger drive.</span>${me?.is_admin ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="storage">Open Storage</button>` : ""}</div>` : "";
   put($("#vbanner"), toolBar ? toolBar : diskBar ? diskBar : aiBar ? aiBar : upBar ? upBar : me && me.verified === false ? `<div class="vb" role="status">${ic("warn")}<span>Confirm your email to start clipping. We sent a link to <b>${esc(me.email)}</b>.</span><button class="btn sm" data-act="resendverify">Send a new link</button></div>`
-    : kk && kk.ready === false && S.view !== "usage" ? `<div class="vb" role="status">${ic("bolt")}<span>${me?.is_admin ? "Add your AI key to let the AI pick clips and write titles. Until then, clips are picked by loudness." : "The AI isn't set up on this server yet, so clips are picked by loudness."}</span>${me?.is_admin && S.view !== "settings" ? `<button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">${ic("plus")}Add AI key</button>` : ""}</div>` : "");
+    : kk && kk.ready === false && S.view !== "usage" && S.view !== "settings" ? `<div class="vb" role="status">${ic("bolt")}<span>Please add your AI API key in Settings before generating clips.</span><button class="btn sm primary" data-act="go" data-v="settings" data-tab="ai">${ic("plus")}Add AI key</button></div>` : "");
   put($("#tpic"), pic); $("#tpic").classList.toggle("live", !!(c && (c.live_job || liveOn(c).length)));
   put($("#utabs"), tabs); moveInd(); $(".topbar").classList.toggle("tabbed", !!tabs);
   put($("#title"), `<span>${esc(title)}</span>`); put($("#subtitle"), subHtml ?? esc(sub)); put($("#actions"), act);
@@ -1688,9 +1690,31 @@ function sendFile(f, who) {
     x.send(fd);
   });
 }
+function promptApiKey() {
+  const d = $("#formdlg");
+  d.innerHTML = `<form method="dialog" class="dlg">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <span style="display:inline-flex;align-items:center;justify-content:center;width:40px;height:40px;border-radius:12px;background:var(--brand-soft);color:var(--brand-ink);flex-shrink:0;">${ic("bolt")}</span>
+      <div>
+        <h2 style="margin:0;font-size:18px;">API Key Required</h2>
+        <span style="font-size:12px;color:var(--dim)">Connect your own AI model to start clipping</span>
+      </div>
+    </div>
+    <p class="help" style="margin:14px 0 20px;font-size:14px;line-height:1.5;color:var(--text);">Please add your API key in Settings before generating clips. Then try again.</p>
+    <div class="dlg-foot" style="display:flex;gap:10px;justify-content:flex-end;">
+      <button class="btn" type="button" onclick="$('#formdlg').close()">Cancel</button>
+      <button class="btn primary" type="button" onclick="$('#formdlg').close(); go('settings', 'ai');">${ic("plus")}Add API Key</button>
+    </div>
+  </form>`;
+  d.showModal();
+}
 async function makeClips() {
   const A = att();
   if (A.busy) return;
+  if (!S.status?.ai?.ready) {
+    promptApiKey();
+    return;
+  }
   const typed = $("#url")?.value.trim();
   if (typed && looksLink(typed) && !isChannel(typed)) { clearTimeout(linkTimer); takeLink(A, typed, $("#url")); }
   if (A.links.some(l => l.state === "wait")) {   // still looking a link up: start as soon as it is found
@@ -1709,13 +1733,19 @@ async function makeClips() {
   for (const l of A.links.filter(x => x.state === "ok")) {
     l.sending = true; drawAtt();
     try { await send("/api/jobs", {url: l.url, options: opts, creator: who}); l.state = "done"; started++; }
-    catch (e) { l.state = "bad"; l.msg = e.message; failed++; }
+    catch (e) {
+      l.state = "bad"; l.msg = e.message; failed++;
+      if (e.message.includes("Please add your API key")) promptApiKey();
+    }
     l.sending = false; drawAtt();
   }
   for (const f of A.files) {
     f.state = "up"; f.pct = 0; drawAtt();
     try { await sendFile(f, who); f.state = "done"; started++; }
-    catch (e) { f.state = "error"; f.err = e.message; failed++; }
+    catch (e) {
+      f.state = "error"; f.err = e.message; failed++;
+      if (e.message.includes("Please add your API key")) promptApiKey();
+    }
     drawAtt();
   }
   A.links = A.links.filter(l => l.state !== "done");
@@ -2055,13 +2085,13 @@ function drawUsage() {
 }
 
 /* ============================================================ settings */
-// With sign-in off there is no profile or password to manage. The AI section is for whoever runs the server.
+// Each user configures their own AI service and API keys. The storage section is for server owners.
 const setTabs = () => [
-  ...(S.status.user?.is_admin ? [["ai", "AI", "bolt", "Your AI service, model and key"]] : []),
+  ["ai", "AI & API Keys", "bolt", "Your AI service, model and API key"],
   ...(S.status.accounts === false ? [] : [["profile", "Profile", "user", "Your name, email and how you sign in"],
                                           ["security", "Security", "lock", "Password and signing out"]]),
   ["apps", "Connected apps", "plug", "Where your clips get posted"],
-  ...(S.status.user?.is_admin ? [["storage", "Storage", "folder", "Where videos and clips are kept"]] : [])];
+  ...(S.status.user?.is_owner || S.status.user?.is_admin ? [["storage", "Storage", "folder", "Where videos and clips are kept"]] : [])];
 function aiHints() {
   const k = S.ai, sel = $("#ai_provider"); if (!k || !sel) return;
   const pv = k.providers.find(x => x.id === sel.value) || k.providers[0], same = pv.id === k.provider;
@@ -2102,17 +2132,6 @@ async function drawSettings() {
       if (!S.aiChain) {
         if (k.chain && k.chain.length) {
           S.aiChain = JSON.parse(JSON.stringify(k.chain));
-        } else if (k.provider && (k.has_key || k.base_url)) {
-          S.aiChain = [{
-            id: k.id || "card_0_" + (k.provider || "gemini"),
-            provider: k.provider || "gemini",
-            models: k.models || ["gemini-2.5-flash"],
-            base_url: k.base_url || "",
-            key: "",
-            has_key: k.has_key,
-            key_hint: k.key_hint,
-            ready: k.ready
-          }];
         } else {
           S.aiChain = [];
         }
@@ -2138,9 +2157,10 @@ async function drawSettings() {
               <div class="row" style="align-items:center;gap:8px;">
                 <span class="pill ${isPrimary ? 'ok' : ''}" style="font-size:12px;">${isPrimary ? '1. Primary' : (idx + 1) + '. Fallback'}</span>
                 <b>${esc(pv.label)}</b>
-                ${item.ready ? `<span class="pill ok" style="font-size:11px;">${ic("check")}Ready</span>` : `<span class="pill warn" style="font-size:11px;">Not set up</span>`}
+                <span class="aistatus_${idx}">${item.ready ? `<span class="pill ok" style="font-size:11px;">${ic("check")}Ready</span>` : `<span class="pill warn" style="font-size:11px;">Not set up</span>`}</span>
               </div>
               <div class="row" style="align-items:center;gap:6px;">
+                <button class="btn sm" type="button" data-act="aitestcard" data-idx="${idx}" title="Test this AI connection" style="font-size:12px;padding:3px 10px;">${ic("bolt")}Test</button>
                 ${S.aiChain.length > 1 && idx > 0 ? `<button class="btn sm ghost" type="button" data-act="aimoveup" data-idx="${idx}" title="Move up" style="font-size:12px;padding:3px 8px;">${ic("up")}Up</button>` : ''}
                 ${S.aiChain.length > 1 && idx < S.aiChain.length - 1 ? `<button class="btn sm ghost" type="button" data-act="aimovedown" data-idx="${idx}" title="Move down" style="font-size:12px;padding:3px 8px;">${ic("down")}Down</button>` : ''}
                 <button class="btn sm ghost" type="button" data-act="airemove" data-idx="${idx}" style="color:var(--bad);" title="Remove this AI service">${ic("trash")}Remove</button>
@@ -2158,7 +2178,7 @@ async function drawSettings() {
                   ${item.has_key ? `<button class="btn sm ghost" type="button" data-act="aiclearkey" data-idx="${idx}" style="font-size:11px;padding:2px 8px;height:auto;color:var(--bad);">${ic("trash")}Clear saved key</button>` : ''}
                 </span>
                 <span class="with">
-                  <input class="aichain_key" data-idx="${idx}" type="password" autocomplete="off" spellcheck="false" placeholder="${keyPlaceholder}" value="${esc(item.key || '')}">
+                  <input class="aichain_key" data-idx="${idx}" type="password" autocomplete="off" name="aikey_${idx}" spellcheck="false" placeholder="${keyPlaceholder}" value="${esc(item.key || '')}">
                   <button class="btn aieyetoggle" type="button" data-act="aieyetoggle" data-idx="${idx}" title="Show key" aria-label="Show or hide key" style="padding:0 10px;display:inline-flex;align-items:center;gap:4px;font-size:12px;">${ic("eye")}<span>Show</span></button>
                 </span>
                 <span class="hint aichain_keyhint" data-idx="${idx}">${keyHint}</span>
@@ -2207,14 +2227,30 @@ async function drawSettings() {
     }
     if (tab === "security") {
       body.innerHTML = `<section class="set-sec"><h2>Password</h2><p class="help">${me.has_password ? "Change the password you use to sign in. Other devices are signed out when you do." : me.google ? "You sign in with Google. You can also set a password, to sign in with your email." : ""}</p>
-          <div class="fields narrow">${me.has_password ? `<label class="f">Current password<input id="pw_cur" type="password" autocomplete="current-password"></label>` : ""}
-            <label class="f">${me.has_password ? "New password" : "Password"}<input id="pw_new" type="password" autocomplete="new-password" placeholder="At least 8 characters"></label></div>
+          <div class="fields narrow">${me.has_password ? `<label class="f">Current password<input id="pw_cur" type="password" name="clipx_cur_pw" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')"></label>` : ""}
+            <label class="f">${me.has_password ? "New password" : "Password"}<input id="pw_new" type="password" name="clipx_new_pw" autocomplete="new-password" readonly onfocus="this.removeAttribute('readonly')" placeholder="At least 8 characters"></label></div>
           <div class="row" style="margin-top:14px"><button class="btn primary" data-act="pwsave">${me.has_password ? "Change password" : "Set password"}</button>
             ${me.has_password ? `<a class="btn ghost" href="/reset">Forgot it?</a>` : ""}</div></section>
         <section class="set-sec"><h2>Sessions</h2><p class="help">Sign out of Clips X on this device. Changing your password signs out every other device too.</p>
           <button class="btn" data-act="logout">${ic("signout")}Sign out</button></section>
         <section class="set-sec"><h2 style="color:var(--bad)">Delete account</h2><p class="help">Removes your account and everything in it for good: creators, recordings, videos, clips and history.</p>
           <button class="btn danger" data-act="delaccount">${ic("trash")}Delete my account</button></section>`;
+      const isApiKeyToken = v => Boolean(v && typeof v === "string" && (v.startsWith("sk-") || v.startsWith("api_") || v.startsWith("AIza") || v.startsWith("gsk_") || v.startsWith("xai-") || v.includes("VGOVIV") || (v.length >= 32 && !v.includes(" "))));
+      const wipeSec = () => ["pw_cur", "pw_new"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && isApiKeyToken(el.value)) el.value = "";
+      });
+      wipeSec();
+      const secTimer = setInterval(wipeSec, 100);
+      setTimeout(() => clearInterval(secTimer), 5000);
+      ["pw_cur", "pw_new"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("focus", wipeSec);
+          el.addEventListener("input", wipeSec);
+          el.addEventListener("change", wipeSec);
+        }
+      });
     }
     if (tab === "storage") {
       const s = S.stor = await api("/api/storage");
@@ -2231,7 +2267,21 @@ async function drawSettings() {
                 <label class="ck"><input type="checkbox" id="stor_move" checked>Move everything that is in the current folder there too</label>
                 <p class="sub">The change happens the next time Clips X starts, so nothing is moved while a video is being made.</p>
                 <div class="row"><button class="btn primary" data-act="storsave">Use this folder</button><button class="btn ghost" data-act="storchange">Cancel</button></div></div>`
-            : `<div class="row" style="margin-top:16px"><button class="btn" data-act="storchange">Change folder</button></div>`}</section>`;
+            : `<div class="row" style="margin-top:16px"><button class="btn" data-act="storchange">Change folder</button></div>`}
+          <div class="card" style="margin-top:20px;border:1px solid var(--line);border-radius:var(--r);background:var(--muted);padding:18px;">
+            <div class="row" style="justify-content:space-between;align-items:center;margin-bottom:8px;">
+              <div class="row" style="align-items:center;gap:8px;">
+                <span class="pill ${s.r2?.enabled ? "ok" : ""}" style="font-size:12px;">Cloudflare R2 Storage</span>
+                <span class="pill ${s.r2?.enabled ? "ok" : "warn"}" style="font-size:11px;">${s.r2?.enabled ? ic("check") + " Active" : "Not configured"}</span>
+              </div>
+              ${s.r2?.enabled ? `<button class="btn sm" type="button" data-act="r2test">${ic("bolt")}Test R2</button>` : ""}
+            </div>
+            <p class="sub" style="margin:0 0 10px;">Cloudflare R2 provides zero-egress cloud object storage. When enabled, clips and media are stored directly in Cloudflare R2 and streamed from Cloudflare's global edge network.</p>
+            ${s.r2?.enabled ? `<div style="font-size:13px;display:grid;gap:4px;">
+                <div><b>Bucket:</b> <code>${esc(s.r2.bucket)}</code></div>
+                ${s.r2.public_url ? `<div><b>CDN / Public URL:</b> <code>${esc(s.r2.public_url)}</code></div>` : ""}
+              </div>` : `<p class="sub" style="margin:0;">Configure <code>R2_ACCOUNT_ID</code>, <code>R2_ACCESS_KEY_ID</code>, <code>R2_SECRET_ACCESS_KEY</code>, and <code>R2_BUCKET_NAME</code> in your <code>.env</code> file to enable R2.</p>`}
+          </div></section>`;
     }
     if (tab === "apps") {
       const conn = S.accounts || [];
@@ -2243,7 +2293,7 @@ async function drawSettings() {
       const yt = '<svg viewBox="0 0 24 24"><path fill="#fff" d="M23.5 6.19a3.02 3.02 0 0 0-2.12-2.14C19.5 3.55 12 3.55 12 3.55s-7.5 0-9.38.5A3.02 3.02 0 0 0 .5 6.19C0 8.07 0 12 0 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 9.38.5 9.38.5s7.5 0 9.38-.5a3.02 3.02 0 0 0 2.12-2.14C24 15.93 24 12 24 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>';
       const ig = '<svg viewBox="0 0 24 24"><path fill="#fff" d="M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23a3.7 3.7 0 0 1-.9 1.38c-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zM12 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zm0 10.16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>';
       const tt = '<svg viewBox="0 0 24 24"><path fill="#fff" d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64c.3 0 .59.04.86.13v-3.5a6.37 6.37 0 0 0-.86-.05A6.34 6.34 0 0 0 3.15 15.7a6.34 6.34 0 0 0 10.86 4.43 6.3 6.3 0 0 0 1.81-4.43V8.73a8.2 8.2 0 0 0 4.77 1.52V6.8a4.85 4.85 0 0 1-1-.11z"/></svg>';
-      const ok = S.status.connect || {}, admin = me.is_admin;
+      const ok = S.status.connect || {}, admin = Boolean(me.is_owner || me.is_admin);
       const setup = admin ? await api("/api/apps").catch(() => null) : null;
       const GUIDE = {
         youtube: ["https://console.cloud.google.com/apis/credentials", "Google Cloud",
@@ -2260,9 +2310,42 @@ async function drawSettings() {
           "Until TikTok reviews your app, clips are posted as private: only the account owner sees them."]};
       const card = (pf, name, logo, bg, desc) => {
         const accs = mine(pf), st = setup?.[pf], open = S.setupOpen === pf, g = GUIDE[pf];
-        const act = (ok[pf] ? `<a class="btn sm primary" href="/oauth/${pf}/start">${ic("plus")}${accs.length ? "Add another" : "Connect"}</a>`
-            : admin ? `<button class="btn sm primary" data-act="appsetup" data-p="${pf}">${ic("cog")}Set up</button>` : `<span class="pill">Not set up on this server</span>`)
-          + (ok[pf] && admin ? `<button class="btn sm ghost" data-act="appsetup" data-p="${pf}" title="Change this server's ${name} app">${ic("cog")}</button>` : "");
+        const isIg = pf === "instagram";
+        const igOpen = Boolean(S.igOpen);
+        let act = "";
+        if (isIg) {
+          if (ok[pf]) {
+            act = `<a class="btn sm primary" href="/oauth/${pf}/start">${ic("plus")}${accs.length ? "Add another" : "Connect"}</a>`
+                + `<button class="btn sm" data-act="igtoken" title="Connect using Instagram Access Token">${ic("plug")}Access token</button>`;
+          } else {
+            act = `<button class="btn sm primary" data-act="igtoken">${ic("plus")}${accs.length ? "Add another" : "Connect"}</button>`;
+          }
+          if (admin) {
+            act += `<button class="btn sm ghost" data-act="appsetup" data-p="${pf}" title="Configure Meta OAuth app">${ic("cog")}</button>`;
+          }
+        } else {
+          act = (ok[pf] ? `<a class="btn sm primary" href="/oauth/${pf}/start">${ic("plus")}${accs.length ? "Add another" : "Connect"}</a>`
+              : admin ? `<button class="btn sm primary" data-act="appsetup" data-p="${pf}">${ic("cog")}Set up</button>` : `<span class="pill">Not set up on this server</span>`)
+            + (ok[pf] && admin ? `<button class="btn sm ghost" data-act="appsetup" data-p="${pf}" title="Change this server's ${name} app">${ic("cog")}</button>` : "");
+        }
+        const igPanel = (isIg && igOpen) ? `<div class="appsetup" style="border:1px solid var(--line);background:var(--bg)">
+            <p class="sub" style="font-weight:600;font-size:14px;color:var(--text);margin:0 0 6px">${ic("instagram")} Connect Instagram Account</p>
+            <p class="sub" style="margin:0 0 8px">Clips X posts vertical clips directly to Instagram Reels. To connect:</p>
+            <ol style="margin:0 0 10px;padding-left:20px;display:grid;gap:6px;font-size:13px;line-height:1.4;">
+              <li>Your Instagram must be a <b>Creator</b> or <b>Business</b> account (In Instagram mobile app: <i>Settings & privacy &rarr; Account type & tools &rarr; Switch to professional account</i>).</li>
+              <li>Get an Access Token from <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener"><b>Meta Graph API Explorer</b></a> with permissions <code>instagram_business_basic</code> and <code>instagram_business_content_publish</code>.</li>
+              <li>Paste your Access Token below and click Connect.</li>
+            </ol>
+            <div class="fields">
+              <label class="f">Instagram Access Token
+                <input id="ig_token_input" type="password" placeholder="Paste your Access Token (starts with EAA...)" autocomplete="off" spellcheck="false">
+              </label>
+            </div>
+            <div class="row" style="margin-top:6px;gap:8px">
+              <button class="btn primary" data-act="igtokensave">${ic("check")}Connect Instagram</button>
+              <button class="btn ghost" data-act="igtoken">Cancel</button>
+            </div>
+          </div>` : "";
         const panel = open && st ? `<div class="appsetup">
             <p class="sub">To let people connect ${name}, register this server once with <a href="${g[0]}" target="_blank" rel="noopener">${g[1]}</a>. It takes about five minutes.</p>
             <ol>${g[2].map(x => `<li>${x}</li>`).join("")}</ol>
@@ -2273,7 +2356,7 @@ async function drawSettings() {
             <p class="sub">${g[3]}</p>
             <div class="row"><button class="btn primary" data-act="appsave" data-p="${pf}">Save</button><button class="btn ghost" data-act="appsetup" data-p="">Close</button></div></div>` : "";
         return `<div class="appcard"><span class="applogo" style="background:${bg}">${logo}</span>
-          <div class="apptx"><b>${name}</b><span>${desc}</span>${listOf(accs)}</div><div class="appact">${act}</div>${panel}</div>`;
+          <div class="apptx"><b>${name}</b><span>${desc}</span>${listOf(accs)}</div><div class="appact">${act}</div>${igPanel}${panel}</div>`;
       };
       body.innerHTML = `<section class="set-sec"><h2>Connected apps</h2><p class="help">Connect the accounts Clips X posts clips to: press Connect, sign in on the platform's own page, and you're back here. Clips X never sees your passwords. Then pick which accounts each creator posts to, in that creator's Setup.</p>
         <div class="apps">
@@ -2500,7 +2583,8 @@ document.addEventListener("click", async e => {
       const input = card.querySelector(".aichain_key");
       if (!input) return;
       const item = S.aiChain && S.aiChain[idx];
-      if (input.type === "password") {
+      const isPw = input.type === "password";
+      if (isPw) {
         if (!input.value && item && item.has_key) {
           try {
             const r = await api(`/api/ai/reveal?idx=${idx}&id=${encodeURIComponent(item.id || "")}`);
@@ -2598,6 +2682,38 @@ document.addEventListener("click", async e => {
         toast(r.models.length ? `${r.models.length} models found. Click the model box to pick one.` : "The service listed no models. Type the model yourself.", r.models.length ? "ok" : "");
         if (r.models.length && inputEl) inputEl.focus();
       } finally { b.disabled = false; }
+      return;
+    }
+    if (a === "aitestcard") {
+      const idx = Number(d.idx || 0);
+      syncAiCards();
+      const card = $(`[data-aicard="${idx}"]`);
+      const item = S.aiChain && S.aiChain[idx];
+      if (!item) return;
+      b.disabled = true;
+      const statusSpan = card?.querySelector(`.aistatus_${idx}`);
+      if (statusSpan) statusSpan.innerHTML = `<span class="pill">${ic("clock")}Testing...</span>`;
+      try {
+        const payload = {
+          provider: item.provider,
+          models: item.models,
+          base_url: item.base_url || "",
+          key: item.key
+        };
+        const res = await send("/api/ai/test", payload);
+        if (res && res.ok) {
+          toast(res.message || `Connected to ${res.provider} (${res.latency_ms}ms)`, "ok");
+          if (statusSpan) statusSpan.innerHTML = `<span class="pill ok">${ic("check")}Connected (${res.latency_ms}ms)</span>`;
+        } else {
+          toast(res?.error || "Connection test failed", "bad");
+          if (statusSpan) statusSpan.innerHTML = `<span class="pill warn">${esc(res?.error || "Failed")}</span>`;
+        }
+      } catch (e) {
+        toast(e.message, "bad");
+        if (statusSpan) statusSpan.innerHTML = `<span class="pill warn">${esc(e.message)}</span>`;
+      } finally {
+        b.disabled = false;
+      }
       return;
     }
     if (a === "aisave" || a === "aitest") {
@@ -2784,7 +2900,37 @@ document.addEventListener("click", async e => {
       S.storOpen = false; toast("Saved. Close Clips X and start it again to switch to the new folder.", "ok"); return drawSettings();
     }
     if (a === "storcancel") { await send("/api/storage", {cancel: true}, "PUT"); toast("Kept the current folder", "ok"); return drawSettings(); }
-    if (a === "appsetup") { S.setupOpen = d.p && S.setupOpen !== d.p ? d.p : ""; return drawSettings(); }
+    if (a === "r2test") {
+      b.disabled = true;
+      try {
+        const res = await api("/api/storage/r2/test");
+        if (res.ok) toast(`R2 Connected! Bucket: ${res.bucket}`, "ok");
+        else toast(`R2 Connection Failed: ${res.error || res.status}`, "bad");
+      } catch (err) {
+        toast(err.message, "bad");
+      } finally {
+        b.disabled = false;
+      }
+      return;
+    }
+    if (a === "appsetup") { S.setupOpen = d.p && S.setupOpen !== d.p ? d.p : ""; if (S.setupOpen) S.igOpen = false; return drawSettings(); }
+    if (a === "igtoken") { S.igOpen = !S.igOpen; if (S.igOpen) S.setupOpen = ""; return drawSettings(); }
+    if (a === "igtokensave") {
+      const tok = $("#ig_token_input")?.value?.trim();
+      if (!tok) return toast("Paste your Instagram Access Token first.", "bad");
+      b.disabled = true;
+      try {
+        const r = await send("/api/accounts/instagram", {token: tok});
+        S.igOpen = false;
+        await tick();
+        toast(`${r.account?.name || "Instagram"} is connected. Pick it in a creator's Setup to post there.`, "ok");
+        return drawSettings();
+      } catch (err) {
+        b.disabled = false;
+        toast(err.message, "bad");
+        return;
+      }
+    }
     if (a === "copytext") { await navigator.clipboard.writeText(d.t); return toast("Copied", "ok"); }
     if (a === "appsave") {
       await send("/api/apps", {platform: d.p, client_id: $("#app_id").value, client_secret: $("#app_secret").value}, "PUT");

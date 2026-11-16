@@ -11,7 +11,7 @@ import traceback
 import uuid
 from pathlib import Path
 
-from . import brain, config, creators, ctx, load, media, render, roman, safe, transcribe, usage
+from . import brain, config, creators, ctx, load, media, r2, render, roman, safe, transcribe, usage
 
 class _FairQueue:
     """Whose video is next. Each person has their own line and the lines take turns, so someone who adds ten
@@ -332,6 +332,8 @@ def delete(jid):
     if job:
         ctx.bump(job["user"])
         shutil.rmtree(job["dir"], ignore_errors=True)
+        if r2.is_enabled():
+            threading.Thread(target=r2.delete_prefix, args=(f"clips/{jid}/",), daemon=True).start()
     return bool(job)
 
 
@@ -396,6 +398,18 @@ def render_one(job, clip, words):
         near = [dict(w, s=w["s"] - off, e=w["e"] - off) for w in roman.words(raw)]
         out = render.render_clip(src, d / "clips", clip["id"], local, near, job["width"], job["height"])
         clip.update(out, status="done", version=clip.get("version", 0) + 1, error=None)
+        if r2.is_enabled():
+            try:
+                cp = d / "clips" / out["file"]
+                cv = d / "clips" / out["cover"]
+                if cp.is_file():
+                    res = r2.upload_file(cp, f"clips/{job['id']}/{out['file']}", content_type="video/mp4")
+                    if res.get("ok"):
+                        clip["r2_url"] = res.get("url")
+                if cv.is_file():
+                    r2.upload_file(cv, f"clips/{job['id']}/{out['cover']}", content_type="image/jpeg")
+            except Exception:
+                pass
         post = {k: clip[k] for k in ("title", "description", "hashtags", "hook", "start", "end", "score")}
         (d / "clips" / f"{clip['id']}.json").write_text(json.dumps(post, indent=1), encoding="utf-8")
         if clip["version"] == 1:

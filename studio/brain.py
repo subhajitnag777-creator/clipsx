@@ -208,18 +208,18 @@ def ask_ai(prompt, schema=None, purpose="AI call"):
     """Try each provider in the fallback chain in order, with each provider trying its models.
     If provider 1 (e.g. Gemini) fails or is off, switches to provider 2 (e.g. OpenAI), then provider 3, etc.
     Returns (the answer, the model that gave it, tokens used) and notes the tokens in the usage record."""
-    if not config.ai_ready():
-        raise RuntimeError("The AI is not set up on this server.")
+    if not ai.ready():
+        raise RuntimeError("Please add your API key in Settings before generating clips. Then try again.")
     providers = [c for c in ai.chain() if c["ready"]]
     if not providers:
-        raise RuntimeError("No AI service is ready on this server.")
+        raise RuntimeError("Please add your API key in Settings before generating clips. Then try again.")
     last = None
     for cfg in providers:
         for model in cfg.get("models", []):
             for attempt in range(2):
                 try:
                     out, sent, wrote = ai.call(model, prompt, schema or SCHEMA, cfg=cfg)
-                    usage.record(sent, wrote, purpose)
+                    usage.record(sent, wrote, purpose, key_id=ai.key_id(cfg))
                     ai.clear_problem()
                     return out, model, sent + wrote
                 except Exception as e:  # noqa: BLE001
@@ -229,7 +229,7 @@ def ask_ai(prompt, schema=None, purpose="AI call"):
                         continue
                     break
     ai.note_problem(last)
-    raise RuntimeError(f"The AI did not answer: {ai.explain(last) or last}")
+    raise RuntimeError(ai.explain(last) or f"The AI did not answer: {last}")
 
 
 def sentence_ends(words) -> list:

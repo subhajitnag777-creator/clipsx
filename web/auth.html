@@ -6,6 +6,8 @@
 <title>Sign in to Clips X · AI Video Clipping & Short-Form Automation</title>
 <meta name="description" content="Turn long videos and live streams into viral 9:16 Shorts, Reels, and TikToks with AI. Automatic moment detection, bouncing captions, virality scores, and multi-platform publishing.">
 <link rel="icon" type="image/svg+xml" href="/brand/favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="/brand/favicon-32.png">
+<link rel="apple-touch-icon" href="/brand/favicon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -671,6 +673,14 @@ body.unlocking .auth-card {
   transform: scale(0.96);
   opacity: 0;
 }
+.cf-turnstile-wrap {
+  margin: 14px 0 10px;
+  display: flex;
+  justify-content: center;
+}
+.cf-turnstile-wrap:empty {
+  display: none;
+}
 </style>
 </head>
 <body>
@@ -680,10 +690,7 @@ body.unlocking .auth-card {
   <!-- Header -->
   <header class="auth-header">
     <a href="/" class="brand-link" aria-label="Clips X Home">
-      <div class="brand-logo-icon">
-        <svg viewBox="0 0 24 24"><path d="M19.5 6.19a3.02 3.02 0 0 0-2.12-2.14C15.5 3.55 12 3.55 12 3.55s-3.5 0-5.38.5A3.02 3.02 0 0 0 4.5 6.19C4 8.07 4 12 4 12s0 3.93.5 5.81a3.02 3.02 0 0 0 2.12 2.14c1.88.5 5.38.5 5.38.5s3.5 0 5.38-.5a3.02 3.02 0 0 0 2.12-2.14C20 15.93 20 12 20 12s0-3.93-.5-5.81zM9.55 15.57V8.43L15.82 12l-6.27 3.57z"/></svg>
-      </div>
-      <div class="brand-text">Clips <span>X</span></div>
+      <img src="/brand/clipsx-full.png?v=clipsx3" alt="Clips X" class="brand-img" style="height:46px;width:auto;object-fit:contain;display:block;">
     </a>
     <div class="status-pill">
       <span class="status-dot"></span>
@@ -840,7 +847,7 @@ body.unlocking .auth-card {
             </div>
             <div class="input-wrap">
               <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              <input class="input-control" type="password" id="loginPassword" autocomplete="new-password" placeholder="Enter your password" required>
+              <input class="input-control" type="password" id="loginPassword" name="clipx_login_pass" autocomplete="new-password" placeholder="Enter your password" readonly onfocus="this.removeAttribute('readonly')" required>
               <button type="button" class="btn-toggle-pw" data-target="loginPassword" aria-label="Toggle password visibility">
                 <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               </button>
@@ -856,6 +863,8 @@ body.unlocking .auth-card {
               <span>Remember me</span>
             </label>
           </div>
+
+          <div id="turnstileSignIn" class="cf-turnstile-wrap"></div>
 
           <button type="submit" class="btn-primary" id="btnSignIn">
             <span class="btn-text">Sign In to Clips X</span>
@@ -889,7 +898,7 @@ body.unlocking .auth-card {
             <label class="field-label" for="signupPassword">Password</label>
             <div class="input-wrap">
               <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              <input class="input-control" type="password" id="signupPassword" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" required>
+              <input class="input-control" type="password" id="signupPassword" name="clipx_signup_pass" autocomplete="new-password" minlength="8" placeholder="At least 8 characters" readonly onfocus="this.removeAttribute('readonly')" required>
               <button type="button" class="btn-toggle-pw" data-target="signupPassword" aria-label="Toggle password visibility">
                 <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               </button>
@@ -900,13 +909,15 @@ body.unlocking .auth-card {
             <label class="field-label" for="signupConfirmPassword">Confirm Password</label>
             <div class="input-wrap">
               <svg class="input-icon" viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/></svg>
-              <input class="input-control" type="password" id="signupConfirmPassword" autocomplete="new-password" placeholder="Re-type your password" required>
+              <input class="input-control" type="password" id="signupConfirmPassword" name="clipx_confirm_pass" autocomplete="new-password" placeholder="Re-type your password" readonly onfocus="this.removeAttribute('readonly')" required>
               <button type="button" class="btn-toggle-pw" data-target="signupConfirmPassword" aria-label="Toggle password visibility">
                 <svg viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
               </button>
             </div>
             <div class="pw-match-hint" id="pwMatchHint" hidden></div>
           </div>
+
+          <div id="turnstileSignUp" class="cf-turnstile-wrap"></div>
 
           <button type="submit" class="btn-primary" id="btnSignUp">
             <span class="btn-text">Create Account &amp; Start Clipping</span>
@@ -927,6 +938,8 @@ body.unlocking .auth-card {
               <input class="input-control" type="email" id="forgotEmail" autocomplete="off" placeholder="you@example.com" required>
             </div>
           </div>
+
+          <div id="turnstileForgot" class="cf-turnstile-wrap"></div>
 
           <button type="submit" class="btn-primary" id="btnForgot">
             <span class="btn-text">Send Password Reset Link</span>
@@ -1047,6 +1060,7 @@ body.unlocking .auth-card {
       const targetId = btn.getAttribute("data-target");
       const input = document.getElementById(targetId);
       if (!input) return;
+      if (isApiKeyToken(input.value)) input.value = "";
       const isPw = input.type === "password";
       input.type = isPw ? "text" : "password";
       btn.style.color = isPw ? "var(--amber-600)" : "var(--text-faint)";
@@ -1054,18 +1068,41 @@ body.unlocking .auth-card {
     });
   });
 
+  // Strict detector to prevent browser password autofill from injecting API keys into password fields
+  function isApiKeyToken(v) {
+    if (!v || typeof v !== "string") return false;
+    const s = v.trim();
+    if (s.startsWith("sk-") || s.startsWith("api_") || s.startsWith("AIza") || s.startsWith("gsk_") || s.startsWith("xai-") || s.startsWith("key-")) return true;
+    if (s.includes("VGOVIV") || s.includes("mk79E8")) return true;
+    if (s.length >= 32 && !s.includes(" ") && !/[!@#$%^&*()]/.test(s)) return true;
+    return false;
+  }
+
   // Prevent browser autofill or unintended pre-population from injecting keys or passwords
   function clearUnpromptedPasswords() {
     ["loginPassword", "signupPassword", "signupConfirmPassword"].forEach(id => {
       const el = document.getElementById(id);
-      if (el && document.activeElement !== el) {
+      if (el && isApiKeyToken(el.value)) {
         el.value = "";
       }
     });
   }
+  ["loginPassword", "signupPassword", "signupConfirmPassword"].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener("input", () => {
+        if (isApiKeyToken(el.value)) el.value = "";
+      });
+      el.addEventListener("focus", () => {
+        if (isApiKeyToken(el.value)) el.value = "";
+      });
+      el.addEventListener("change", () => {
+        if (isApiKeyToken(el.value)) el.value = "";
+      });
+    }
+  });
   clearUnpromptedPasswords();
-  setTimeout(clearUnpromptedPasswords, 40);
-  setTimeout(clearUnpromptedPasswords, 150);
+  setInterval(clearUnpromptedPasswords, 100);
 
   // Real-time password match validation
   const pwInput = document.getElementById("signupPassword");
@@ -1093,6 +1130,60 @@ body.unlocking .auth-card {
   pwInput.addEventListener("input", checkPasswordMatch);
   confirmPwInput.addEventListener("input", checkPasswordMatch);
 
+  // Cloudflare Turnstile Integration
+  let turnstileCfg = null;
+  const turnstileWidgets = {};
+
+  function initTurnstile(cfg) {
+    if (!cfg?.turnstile?.enabled || !cfg?.turnstile?.sitekey) return;
+    turnstileCfg = cfg.turnstile;
+    window.onTurnstileReady = () => renderTurnstileWidgets();
+    if (!document.getElementById("turnstile-script")) {
+      const s = document.createElement("script");
+      s.id = "turnstile-script";
+      s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileReady&render=explicit";
+      s.async = true;
+      s.defer = true;
+      document.head.appendChild(s);
+    } else {
+      renderTurnstileWidgets();
+    }
+  }
+
+  function renderTurnstileWidgets() {
+    if (!window.turnstile || !turnstileCfg?.sitekey) return;
+    ["turnstileSignIn", "turnstileSignUp", "turnstileForgot"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && !turnstileWidgets[id] && el.offsetParent !== null) {
+        try {
+          turnstileWidgets[id] = window.turnstile.render("#" + id, {
+            sitekey: turnstileCfg.sitekey,
+            theme: "light",
+            size: "flexible"
+          });
+        } catch (e) {}
+      }
+    });
+  }
+
+  function getTurnstileToken(id) {
+    if (!turnstileCfg?.enabled) return "";
+    if (window.turnstile && turnstileWidgets[id] !== undefined) {
+      try {
+        return window.turnstile.getResponse(turnstileWidgets[id]) || "";
+      } catch (e) {}
+    }
+    return "";
+  }
+
+  function resetTurnstile(id) {
+    if (window.turnstile && turnstileWidgets[id] !== undefined) {
+      try {
+        window.turnstile.reset(turnstileWidgets[id]);
+      } catch (e) {}
+    }
+  }
+
   // Smooth unlock animation and transition
   function triggerUnlock(redirectUrl) {
     document.body.classList.add("unlocking");
@@ -1114,6 +1205,12 @@ body.unlocking .auth-card {
       return;
     }
 
+    const turnstileToken = getTurnstileToken("turnstileSignIn");
+    if (turnstileCfg?.enabled && !turnstileToken) {
+      showAlert("Please complete the security check.", true);
+      return;
+    }
+
     btn.disabled = true;
     btn.classList.add("loading");
 
@@ -1121,7 +1218,7 @@ body.unlocking .auth-card {
       const resp = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password })
+        body: JSON.stringify({ email, password, turnstile_token: turnstileToken })
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -1130,6 +1227,7 @@ body.unlocking .auth-card {
       showAlert("Welcome back! Loading your studio...", false);
       triggerUnlock(destUrl);
     } catch (err) {
+      resetTurnstile("turnstileSignIn");
       showAlert(err.message, true);
       btn.disabled = false;
       btn.classList.remove("loading");
@@ -1163,6 +1261,12 @@ body.unlocking .auth-card {
       return;
     }
 
+    const turnstileToken = getTurnstileToken("turnstileSignUp");
+    if (turnstileCfg?.enabled && !turnstileToken) {
+      showAlert("Please complete the security check.", true);
+      return;
+    }
+
     btn.disabled = true;
     btn.classList.add("loading");
 
@@ -1170,7 +1274,7 @@ body.unlocking .auth-card {
       const resp = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password })
+        body: JSON.stringify({ name, email, password, turnstile_token: turnstileToken })
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -1179,6 +1283,7 @@ body.unlocking .auth-card {
       showAlert("Account created! Unlocking your studio...", false);
       triggerUnlock(destUrl);
     } catch (err) {
+      resetTurnstile("turnstileSignUp");
       showAlert(err.message, true);
       btn.disabled = false;
       btn.classList.remove("loading");
@@ -1197,6 +1302,12 @@ body.unlocking .auth-card {
       return;
     }
 
+    const turnstileToken = getTurnstileToken("turnstileForgot");
+    if (turnstileCfg?.enabled && !turnstileToken) {
+      showAlert("Please complete the security check.", true);
+      return;
+    }
+
     btn.disabled = true;
     btn.classList.add("loading");
 
@@ -1204,7 +1315,7 @@ body.unlocking .auth-card {
       const resp = await fetch("/api/auth/forgot", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email })
+        body: JSON.stringify({ email, turnstile_token: turnstileToken })
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
@@ -1214,6 +1325,7 @@ body.unlocking .auth-card {
       btn.disabled = false;
       btn.classList.remove("loading");
     } catch (err) {
+      resetTurnstile("turnstileForgot");
       showAlert(err.message, true);
       btn.disabled = false;
       btn.classList.remove("loading");
@@ -1227,12 +1339,13 @@ body.unlocking .auth-card {
     setMode("signin");
   }
 
-  // Check public config (e.g. if Google OAuth is ready)
+  // Check public config (e.g. if Google OAuth is ready, and load Turnstile if enabled)
   fetch("/api/public").then(r => r.json()).then(cfg => {
     if (cfg && cfg.google === false) {
       googleBtn.style.opacity = "0.7";
       googleBtn.title = "Google OAuth is not configured on this server yet.";
     }
+    initTurnstile(cfg);
   }).catch(() => {});
 
 })();

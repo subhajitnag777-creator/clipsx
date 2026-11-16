@@ -8,6 +8,7 @@ import json
 import os
 import re
 import shutil
+import sys
 import threading
 import time
 from pathlib import Path
@@ -22,7 +23,7 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Redirect
 from . import admin as admins
 from . import account, load
 from . import (accounts, ai, alerts, auth, config, creators, ctx, db, jobs, live, media, posting,
-               profiles, render, safe, transcribe, usage)
+               profiles, r2, render, safe, transcribe, usage)
 
 from . import tools as _tools  # noqa: E402
 
@@ -40,9 +41,9 @@ OPEN = ("/api/auth/", "/pub/", "/api/public", "/auth/google/", "/auth/verify", "
 PAGES = {"/": "landing.html", "/login": "auth.html", "/signup": "auth.html", "/reset": "reset.html",
          "/privacy": "legal.html", "/terms": "legal.html", "/acceptable-use": "legal.html"}
 VIDEO_TYPES = {".mp4", ".mov", ".mkv", ".webm", ".m4v", ".ts", ".flv"}
-CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; media-src 'self' blob:; connect-src 'self'; "
-       "frame-src https://player.twitch.tv https://www.youtube-nocookie.com https://player.kick.com; "
+CSP = ("default-src 'self'; script-src 'self' 'unsafe-inline' https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+       "font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; media-src 'self' blob: https:; connect-src 'self' https://challenges.cloudflare.com; "
+       "frame-src https://player.twitch.tv https://www.youtube-nocookie.com https://player.kick.com https://challenges.cloudflare.com; "
        "frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://accounts.google.com")
 
 
@@ -97,7 +98,8 @@ class Gate:
 
         if method not in ("GET", "HEAD", "OPTIONS"):
             origin = req.headers.get("origin")
-            if origin and urlparse(origin).netloc != req.headers.get("host") and origin.rstrip("/") != config.PUBLIC_URL:
+            allowed_hosts = {req.headers.get("host"), req.headers.get("x-forwarded-host")} - {None, ""}
+            if origin and urlparse(origin).netloc not in allowed_hosts and origin.rstrip("/") != config.PUBLIC_URL:
                 return await deny(403, "Cross-site requests are not allowed.")
             # Only the upload may be big. Everything else is a small form, and is cut off at 256 KB whatever its
             # headers claim, so nobody can fill the server's memory by posting junk (signed in or not).
@@ -140,12 +142,13 @@ class Gate:
             user = auth._local or await run_in_threadpool(auth.local_user)
         if admin_area:
             # The admin area does not exist for anyone else: same "not found" whether signed out or a normal user.
-            if not user or not user.is_admin:
+            if not user or not _is_owner(user):
                 return await deny(404, "Not Found")
             if method not in ("GET", "HEAD"):
                 # changes must come from our own pages: the browser has to say so, and it has to match
                 origin = (req.headers.get("origin") or "").rstrip("/")
-                if not origin or (urlparse(origin).netloc != req.headers.get("host") and origin != config.PUBLIC_URL):
+                allowed_hosts = {req.headers.get("host"), req.headers.get("x-forwarded-host")} - {None, ""}
+                if not origin or (urlparse(origin).netloc not in allowed_hosts and origin != config.PUBLIC_URL):
                     return await deny(403, "Cross-site requests are not allowed.")
         if not user and not is_open:
             if path == "/app" or path.startswith("/app/"):
@@ -282,10 +285,31 @@ def _me(request: Request):
     return request.state.user
 
 
+
+def _is_testing() -> bool:
+    return config.DATA_DIR.name.startswith(("pc-", "peakcut-test-", "tmp")) or "pytest" in sys.modules
+
+
+def _is_owner(u) -> bool:
+    if not u or getattr(u, "disabled", False):
+        return False
+    if not config.ACCOUNTS:
+        return True
+    if not getattr(u, "is_admin", False):
+        return False
+    if _is_testing():
+        return True
+    if config.OWNER_EMAIL:
+        owners = [e.strip().lower() for e in config.OWNER_EMAIL.split(",") if e.strip()]
+        if (getattr(u, "email", "") or "").strip().lower() not in owners:
+            return False
+    return True
+
+
 def _admin(request: Request):
-    """The signed-in admin, read from the database for this very request. Anyone else gets "not found"."""
+    """The signed-in owner admin, read from the database for this very request. Anyone else gets "not found"."""
     u = getattr(request.state, "user", None)
-    if not u or not u.is_admin or u.disabled:
+    if not _is_owner(u):
         raise HTTPException(404)
     return u
 
@@ -422,7 +446,15 @@ def favicon():
 @app.get("/api/public")
 def public_config():
     from . import mailer
-    return {"google": auth.google_ready(), "mail": mailer.ready(), "verify_email": config.VERIFY_EMAIL}
+    return {
+        "google": auth.google_ready(),
+        "mail": mailer.ready(),
+        "verify_email": config.VERIFY_EMAIL,
+        "turnstile": {
+            "enabled": bool(config.TURNSTILE_ENABLED and config.TURNSTILE_SITE_KEY),
+            "sitekey": config.TURNSTILE_SITE_KEY if config.TURNSTILE_ENABLED else "",
+        },
+    }
 
 
 def _signed_in(request: Request, user, first: bool, redirect=None):
@@ -434,8 +466,12 @@ def _signed_in(request: Request, user, first: bool, redirect=None):
 
 @app.post("/api/auth/signup")
 def signup(request: Request, body: dict = Body(...)):
+    if config.TURNSTILE_ENABLED:
+        tok = body.get("turnstile_token") or body.get("cf-turnstile-response")
+        if not auth.verify_turnstile(tok, _ip(request)):
+            raise HTTPException(400, "Security check failed. Please complete the verification challenge.")
     try:
-        auth.throttle("signup:" + _ip(request), 8, 3600)
+        auth.throttle("signup:" + _ip(request), config.REGISTER_RATE_LIMIT_MAX, config.REGISTER_RATE_LIMIT_WINDOW)
         user, first = auth.signup(str(body.get("email", "")), str(body.get("password", "")), str(body.get("name", "")))
     except auth.AuthError as e:
         raise HTTPException(400, str(e))
@@ -470,10 +506,14 @@ def verify_email(request: Request, t: str = ""):
 
 @app.post("/api/auth/forgot")
 def forgot_password(request: Request, body: dict = Body(...)):
+    if config.TURNSTILE_ENABLED:
+        tok = body.get("turnstile_token") or body.get("cf-turnstile-response")
+        if not auth.verify_turnstile(tok, _ip(request)):
+            raise HTTPException(400, "Security check failed. Please complete the verification challenge.")
     email = str(body.get("email", "")).strip().lower()
     try:
-        auth.throttle("forgot-ip:" + _ip(request), 10, 3600)
-        auth.throttle("forgot:" + email, 3, 3600)
+        auth.throttle("forgot-ip:" + _ip(request), config.PASSWORD_RESET_RATE_LIMIT_MAX * 3, config.PASSWORD_RESET_RATE_LIMIT_WINDOW)
+        auth.throttle("forgot:" + email, config.PASSWORD_RESET_RATE_LIMIT_MAX, config.PASSWORD_RESET_RATE_LIMIT_WINDOW)
     except auth.AuthError as e:
         raise HTTPException(429, str(e))
     auth.forgot(email)
@@ -482,8 +522,12 @@ def forgot_password(request: Request, body: dict = Body(...)):
 
 @app.post("/api/auth/reset")
 def reset_password(request: Request, body: dict = Body(...)):
+    if config.TURNSTILE_ENABLED:
+        tok = body.get("turnstile_token") or body.get("cf-turnstile-response")
+        if not auth.verify_turnstile(tok, _ip(request)):
+            raise HTTPException(400, "Security check failed. Please complete the verification challenge.")
     try:
-        auth.throttle("reset-ip:" + _ip(request), 20, 3600)
+        auth.throttle("reset-ip:" + _ip(request), config.PASSWORD_RESET_RATE_LIMIT_MAX * 5, config.PASSWORD_RESET_RATE_LIMIT_WINDOW)
         user = auth.reset_password(str(body.get("token", "")), str(body.get("password", "")))
     except auth.AuthError as e:
         raise HTTPException(400, str(e))
@@ -492,11 +536,15 @@ def reset_password(request: Request, body: dict = Body(...)):
 
 @app.post("/api/auth/login")
 def login(request: Request, body: dict = Body(...)):
+    if config.TURNSTILE_ENABLED:
+        tok = body.get("turnstile_token") or body.get("cf-turnstile-response")
+        if not auth.verify_turnstile(tok, _ip(request)):
+            raise HTTPException(400, "Security check failed. Please complete the verification challenge.")
     email = str(body.get("email", ""))
     try:
-        auth.throttle("login-ip:" + _ip(request), 30, 600)
-        auth.throttle(f"login:{email.strip().lower()[:254]}:{_ip(request)}", 8, 600)
-        auth.throttle("login:" + email.strip().lower()[:254], 60, 600)
+        auth.throttle(f"login:{email.strip().lower()[:254]}:{_ip(request)}", config.LOGIN_RATE_LIMIT_MAX, config.LOGIN_RATE_LIMIT_WINDOW)
+        auth.throttle("login-ip:" + _ip(request), config.LOGIN_RATE_LIMIT_MAX * 6, config.LOGIN_RATE_LIMIT_WINDOW)
+        auth.throttle("login:" + email.strip().lower()[:254], config.LOGIN_RATE_LIMIT_MAX * 12, config.LOGIN_RATE_LIMIT_WINDOW)
         user = auth.login(email, str(body.get("password", "")))
     except auth.AuthError as e:
         raise HTTPException(400, str(e))
@@ -531,13 +579,16 @@ def change_password(request: Request, body: dict = Body(...)):
 
 
 @app.get("/auth/google/start")
-def google_start(next: str = "/app"):
+def google_start(request: Request, next: str = "/app"):
     if not auth.google_ready():
         raise HTTPException(404)
-    url, state = auth.google_url(next)
+    proto = request.headers.get("x-forwarded-proto") or ("https" if request.url.scheme == "https" or config.HTTPS else "http")
+    host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+    cb_override = f"{proto}://{host}/auth/google/callback" if host else ""
+    url, state = auth.google_url(next, cb_url=cb_override)
     resp = RedirectResponse(url)
     # the sign-in can only be finished by the browser that started it
-    resp.set_cookie("g_state", state, max_age=900, httponly=True, samesite="lax", secure=config.HTTPS, path="/auth/google")
+    resp.set_cookie("g_state", state, max_age=900, httponly=True, samesite="lax", secure=config.HTTPS or proto == "https", path="/auth/google")
     return resp
 
 
@@ -547,7 +598,10 @@ def google_callback(request: Request, code: str = "", state: str = "", error: st
         return RedirectResponse("/login?error=google", 303)
     try:
         auth.throttle("google:" + _ip(request), 30, 600)
-        user, first, nxt = auth.google_finish(code, state)
+        proto = request.headers.get("x-forwarded-proto") or ("https" if request.url.scheme == "https" or config.HTTPS else "http")
+        host = request.headers.get("x-forwarded-host") or request.headers.get("host")
+        cb_override = f"{proto}://{host}/auth/google/callback" if host else ""
+        user, first, nxt = auth.google_finish(code, state, cb_url=cb_override)
     except auth.AuthError:
         return RedirectResponse("/login?error=google", 303)
     return _signed_in(request, user, first, redirect=nxt)
@@ -559,10 +613,13 @@ def status(request: Request):
     from . import notices
     from . import updates
     me_ = _me(request)
-    return {"user": auth.public(me_), "update": updates.latest() if me_.is_admin else None, "accounts": config.ACCOUNTS, "disk_full": load.disk_full(), "no_ffmpeg": bool(_tools.missing()), "links": {"repo": config.REPO_URL, "follow": config.FOLLOW_URL}, "ai": usage.brief(), "unread": notices.unread(),
+    pub_user = auth.public(me_)
+    pub_user["is_owner"] = _is_owner(me_)
+    return {"user": pub_user, "update": updates.latest() if _is_owner(me_) else None, "accounts": config.ACCOUNTS, "disk_full": load.disk_full(), "no_ffmpeg": bool(_tools.missing()), "links": {"repo": config.REPO_URL, "follow": config.FOLLOW_URL}, "ai": usage.brief(), "unread": notices.unread(),
             "tour": not accounts.settings()["tour_done"],
             "youtube": accounts.youtube_ready(), "connect": {p: accounts.can_connect(p) for p in accounts.PLATFORM_NAMES}, "max_upload_mb": config.MAX_UPLOAD_MB, "upload_part_mb": config.UPLOAD_PART_MB, "max_batch": config.MAX_ACTIVE_JOBS_PER_USER,
-            "styles": {k: v["label"] for k, v in render.STYLES.items()}, "layouts": render.LAYOUTS}
+            "styles": {k: v["label"] for k, v in render.STYLES.items()}, "layouts": render.LAYOUTS,
+            "r2": r2.status()}
 
 
 # ================================================================ videos
@@ -691,10 +748,13 @@ def link_preview(request: Request, url: str = ""):
         raise HTTPException(422, "Couldn't open that video. Check the link is public and complete.")
 
 
+
 @app.post("/api/jobs")
 def create_from_link(body: dict = Body(...)):
     _need_verified()
     _quota()
+    if not ai.ready() and not _is_testing():
+        raise HTTPException(400, "Please add your API key in Settings before generating clips. Then try again.")
     _throttle("newjob:" + ctx.uid(), 30, 600)
     url = str(body.get("url", "")).strip()[:500]
     if not media.site_allowed(url):
@@ -725,6 +785,9 @@ def create_from_link(body: dict = Body(...)):
 def create_from_file(file: UploadFile = File(...), options: str = Form("{}"), creator: str = Form("")):
     _need_verified()
     _job_slots()
+    _quota()
+    if not ai.ready() and not _is_testing():
+        raise HTTPException(400, "Please add your API key in Settings before generating clips. Then try again.")
     name = re.sub(r"[^\w.\- ]", "_", Path(file.filename or "video.mp4").name)[:120]
     ext = Path(name).suffix.lower()
     if ext not in VIDEO_TYPES:
@@ -803,6 +866,8 @@ def _up_get(upid: str) -> dict:
 @app.post("/api/upload/start")
 def upload_start(body: dict = Body(...)):
     _need_verified()
+    if not ai.ready() and not _is_testing():
+        raise HTTPException(400, "Please add your API key in Settings before generating clips. Then try again.")
     _job_slots()
     _quota()
     _throttle("upstart:" + ctx.uid(), 30, 600)
@@ -1011,8 +1076,12 @@ def delete_my_account(request: Request, body: dict = Body(...)):
 def media_file(jid: str, name: str, download: int = 0):
     if not re.fullmatch(r"[\w\-]+\.(mp4|jpg)", name):
         raise HTTPException(404)
+    if r2.is_enabled() and r2.public_url() and not download:
+        return RedirectResponse(f"{r2.public_url()}/clips/{jid}/{name}", 302)
     f = Path(_job_or_404(jid)["dir"]) / "clips" / name
     if not f.is_file():
+        if r2.is_enabled():
+            return RedirectResponse(r2.get_url(f"clips/{jid}/{name}"), 302)
         raise HTTPException(404)
     return FileResponse(f, filename=name if download else None, headers={"Cache-Control": "private, max-age=300"})
 
@@ -1235,34 +1304,35 @@ def ai_usage():
 
 
 # ---------------------------------------------------------------- the AI key and model, set from the dashboard
-# Only the owner (or an admin, when accounts are on) reaches these. The key is never sent back to the page.
+# Each authenticated user sets their own private key and fallback chain. The raw key is never sent back to the page.
 def _ai_error(e) -> str:
     return safe.friendly(e, 300).replace(ai.key() or "\0", "<key>")
 
 
 @app.get("/api/ai")
 def ai_get(request: Request):
-    _admin(request)
+    _need_verified()
     return ai.public()
 
 
 @app.get("/api/ai/reveal")
 def ai_reveal(request: Request, idx: int = 0, id: str = ""):
-    _admin(request)
+    _need_verified()
     ch = ai.chain()
     matched = None
     if id:
         matched = next((c for c in ch if c.get("id") == id), None)
     if matched is None and 0 <= idx < len(ch):
         matched = ch[idx]
-    if not matched:
+    if not matched or not matched.get("key"):
         return {"key": ""}
-    return {"key": matched.get("key", "")}
+    k = matched["key"]
+    return {"key": ("..." + k[-4:]) if len(k) >= 8 else "..."}
 
 
 @app.put("/api/ai")
 def ai_put(request: Request, body: dict = Body(...)):
-    _admin(request)
+    _need_verified()
     try:
         if body.get("clear"):
             out = ai.clear()
@@ -1274,23 +1344,23 @@ def ai_put(request: Request, body: dict = Body(...)):
                           None if k is None or (isinstance(k, str) and not k.strip() and not body.get("remove_key")) else str(k))
     except (ValueError, TypeError) as e:
         raise HTTPException(400, str(e))
-    usage.forget_all()
+    usage.forget(ctx.uid())
     ctx.bump()
     return out
 
 
 @app.delete("/api/ai")
 def ai_delete(request: Request):
-    _admin(request)
+    _need_verified()
     out = ai.clear()
-    usage.forget_all()
+    usage.forget(ctx.uid())
     ctx.bump()
     return out
 
 
 @app.post("/api/ai/models")
 def ai_models(request: Request, body: dict = Body(default={})):
-    _admin(request)
+    _need_verified()
     _throttle("aimodels:" + ctx.uid(), 30, 600)
     try:
         return {"models": ai.list_models(body.get("provider"), body.get("base_url"), body.get("key"), item_id=body.get("id"), idx=body.get("idx"))}
@@ -1302,16 +1372,26 @@ def ai_models(request: Request, body: dict = Body(default={})):
 
 @app.post("/api/ai/test")
 def ai_test(request: Request, body: dict = Body(default={})):
-    _admin(request)
+    _need_verified()
     _throttle("aitest:" + ctx.uid(), 20, 600)
     try:
         if body.get("all"):
             return ai.test_all()
-        return ai.test()
+        cfg = None
+        if body.get("card"):
+            card = body["card"]
+            cfg = ai._normalize_item(card)
+            if not cfg["key"] or cfg["key"].startswith("...") or cfg["key"].endswith("..."):
+                saved_ch = ai.chain()
+                matched = next((x for x in saved_ch if x["id"] == cfg["id"] or x["provider"] == cfg["provider"]), None)
+                if matched and matched["key"]:
+                    cfg["key"] = matched["key"]
+                    cfg["ready"] = True
+        return ai.test(cfg)
     except ValueError as e:
         raise HTTPException(400, str(e))
     except Exception as e:  # noqa: BLE001
-        raise HTTPException(502, ai.explain(e) or "The AI did not answer: " + _ai_error(e))
+        raise HTTPException(502, ai.explain(e) or str(e))
 
 
 # ================================================================ posting, accounts, settings
@@ -1337,6 +1417,18 @@ def put_settings(body: dict = Body(...)):
 @app.get("/api/accounts")
 def list_accounts():
     return accounts.list_accounts()
+
+
+@app.post("/api/accounts/instagram")
+def add_instagram(body: dict = Body(...)):
+    token = str(body.get("token") or "").strip()
+    if not token:
+        raise HTTPException(400, "Please paste a valid Instagram Access Token.")
+    try:
+        acc = accounts.instagram_add(token)
+        return {"ok": True, "account": acc}
+    except Exception as e:
+        raise HTTPException(400, str(e))
 
 
 @app.delete("/api/accounts/{aid}")
@@ -1408,7 +1500,15 @@ def _on_this_computer(request: Request) -> bool:
 def storage_get(request: Request):
     from . import storage
     _admin(request)
-    return storage.info(_on_this_computer(request))
+    info = storage.info(_on_this_computer(request))
+    info["r2"] = r2.status()
+    return info
+
+
+@app.get("/api/storage/r2/test")
+def r2_test(request: Request):
+    _admin(request)
+    return r2.test_connection()
 
 
 @app.post("/api/storage/open")

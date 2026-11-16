@@ -297,7 +297,14 @@ def remove(aid):
 
 def _check(r, what):
     if r.status_code >= 400:
-        raise RuntimeError(f"{what} failed ({r.status_code}): {r.text[:300]}")
+        msg = r.text[:300]
+        try:
+            err = r.json().get("error", {})
+            if isinstance(err, dict):
+                msg = err.get("error_user_msg") or err.get("message") or msg
+        except Exception:
+            pass
+        raise RuntimeError(f"{what} failed ({r.status_code}): {msg}")
     return r
 
 
@@ -383,18 +390,56 @@ def _instagram_finish(code: str) -> dict:
 
 
 def _instagram_save(token: str) -> dict:
-    me = _check(httpx.get(f"{IG}/me", params={"fields": "user_id,username,account_type"},
-                          headers={"Authorization": f"Bearer {token}"}, timeout=30), "Reading the Instagram account").json()
-    kind = str(me.get("account_type") or "")
-    acc = {"id": f"ig_{me['user_id']}", "platform": "instagram", "name": "@" + me["username"], "added": time.time(),
-           "user_id": str(me["user_id"]), "token": token, "token_time": time.time(),
-           "detail": {"BUSINESS": "Business account", "MEDIA_CREATOR": "Creator account"}.get(kind.upper(), "")}
-    _put(acc)
-    return acc
+    token = token.strip()
+    err_msg = ""
+    # 1. First try direct Instagram Graph API (/me)
+    try:
+        r = httpx.get(f"{IG}/me", params={"fields": "user_id,username,account_type"},
+                      headers={"Authorization": f"Bearer {token}"}, timeout=30)
+        if r.status_code == 200:
+            me = r.json()
+            uid = str(me.get("user_id") or me.get("id") or "")
+            if uid:
+                username = me.get("username") or uid
+                kind = str(me.get("account_type") or "").upper()
+                detail = {"BUSINESS": "Business account", "MEDIA_CREATOR": "Creator account"}.get(kind)
+                if not detail:
+                    detail = f"{kind.capitalize() or 'Personal'} account (Must be Creator/Business to post Reels)"
+                acc = {"id": f"ig_{uid}", "platform": "instagram", "name": "@" + username, "added": time.time(),
+                       "user_id": uid, "token": token, "token_time": time.time(),
+                       "detail": detail}
+                _put(acc)
+                return acc
+        else:
+            err_msg = r.text[:200]
+    except Exception as e:
+        err_msg = str(e)
+
+    # 2. If direct Instagram /me failed, check if it's a Meta Page Token (Facebook Graph API) with a linked Instagram Business account
+    try:
+        r_fb = httpx.get("https://graph.facebook.com/v21.0/me/accounts",
+                         params={"fields": "instagram_business_account{id,username,name}"},
+                         headers={"Authorization": f"Bearer {token}"}, timeout=30)
+        if r_fb.status_code == 200:
+            fb_data = r_fb.json().get("data", [])
+            for page in fb_data:
+                ig_biz = page.get("instagram_business_account")
+                if ig_biz and ig_biz.get("id"):
+                    uid = str(ig_biz["id"])
+                    uname = ig_biz.get("username") or uid
+                    acc = {"id": f"ig_{uid}", "platform": "instagram", "name": "@" + uname, "added": time.time(),
+                           "user_id": uid, "token": token, "token_time": time.time(),
+                           "detail": "Business account (via Facebook Page)"}
+                    _put(acc)
+                    return acc
+    except Exception:
+        pass
+
+    raise ValueError(f"Could not connect Instagram account with this token: {err_msg or 'Invalid token or account not found'}. Make sure your token is valid and your account is set to Creator or Business.")
 
 
 def instagram_add(token: str) -> dict:
-    """An account added with a token pasted from the Meta app dashboard (older way; Connect is the normal one)."""
+    """An account added with an Instagram Access Token."""
     return _instagram_save(token.strip())
 
 
@@ -425,10 +470,11 @@ def instagram_upload(acc, path: Path, caption: str, job_id: str = ""):
                                                            "caption": caption[:2200], "share_to_feed": "true"},
                                 headers=auth, timeout=60), "Starting the Instagram upload").json()
         with path.open("rb") as f:
-            _check(httpx.post(f"{IG_UPLOAD}/{box['id']}", content=f.read(),
-                              headers={"Authorization": f"OAuth {token}", "offset": "0",
+            upload_url = box.get("uri") or f"{IG_UPLOAD}/{box['id']}"
+            _check(httpx.post(upload_url, content=f.read(),
+                              headers={"Authorization": f"OAuth {token}", "offset": "0", "file_offset": "0",
                                        "file_size": str(path.stat().st_size)}, timeout=900),
-                   "Uploading to Instagram (posting from a computer needs a public https address)")
+                   "Uploading to Instagram")
     for _ in range(90):
         st = _check(httpx.get(f"{IG}/{box['id']}", params={"fields": "status_code,status"}, headers=auth, timeout=30),
                     "Checking the Instagram upload").json()
