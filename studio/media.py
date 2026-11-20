@@ -17,10 +17,10 @@ NO_WINDOW = getattr(subprocess, "CREATE_NO_WINDOW", 0)
 # YouTube sometimes refuses a server's downloads altogether ("sign in to confirm you're not a bot"). It is a
 # refusal of the server, not of one video, so once it happens YouTube links are turned away at once for a few
 # minutes, with a clear message, instead of each one waiting to fail. Then the next link simply tries again.
-YT_PAUSE = 600
+YT_PAUSE = 60
 _yt_refused_until = 0.0
-YT_BLOCKED = ("YouTube isn't letting PeakCut download videos right now. Upload the video file instead, or use a "
-              "Twitch or Kick link. YouTube links will be tried again in a few minutes.")
+YT_BLOCKED = ("YouTube isn't letting Clips X download videos right now. Upload the video file instead, or use a "
+              "Twitch or Kick link. YouTube links will be tried again in a few moments.")
 _BOT_CHECK = re.compile(r"not a bot|confirm you.?re not|sign in to confirm(?! your age)", re.I)
 
 
@@ -98,13 +98,41 @@ class _Quiet:
 def _ydl(opts):
     import yt_dlp
     # a channel or playlist link is answered as "a list" straight away, never walked video by video
-    return yt_dlp.YoutubeDL({"noplaylist": True, "quiet": True, "no_warnings": True, "logger": _Quiet(),
-                             "extract_flat": "in_playlist", "playlistend": 1, "socket_timeout": 20,
-                             "concurrent_fragment_downloads": 4, **opts})
+    base = {
+        "noplaylist": True,
+        "quiet": True,
+        "no_warnings": True,
+        "logger": _Quiet(),
+        "extract_flat": "in_playlist",
+        "playlistend": 1,
+        "socket_timeout": 20,
+        "concurrent_fragment_downloads": 4,
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "ios", "tv_embedded", "mweb", "web"]
+            }
+        },
+        "http_headers": {
+            "User-Agent": "com.google.android.youtube/19.29.37 (Linux; U; Android 14; US) gzip",
+            "Accept-Language": "en-US,en;q=0.9",
+        },
+    }
+    cookie_file = config.cookies_file()
+    if cookie_file:
+        base["cookiefile"] = str(cookie_file)
+    proxy = config.env("YTDLP_PROXY") or config.env("HTTPS_PROXY") or config.env("HTTP_PROXY")
+    if proxy:
+        base["proxy"] = proxy.strip()
+    merged = {**base, **opts}
+    if "extractor_args" in opts:
+        ext = dict(base.get("extractor_args") or {})
+        ext.update(opts["extractor_args"])
+        merged["extractor_args"] = ext
+    return yt_dlp.YoutubeDL(merged)
 
 
 def _video_format(height):
-    return f"bv*[height<={height}][vcodec^=avc1]+ba[ext=m4a]/bv*[height<={height}]+ba/b[height<={height}]/b"
+    return f"bv*[height<={height}][vcodec^=avc1]+ba[ext=m4a]/bv*[height<={height}]+ba/b[height<={height}]/b/best"
 
 
 def _biggest(job_dir: Path, stem: str) -> Path:
@@ -249,7 +277,7 @@ def download_audio(url: str, job_dir: Path, on_progress=None) -> Path:
         if on_progress and d.get("status") == "downloading" and total:
             on_progress(d.get("downloaded_bytes", 0) / total)
 
-    with _youtube_guard(url), _ydl({"format": "ba[ext=m4a]/ba/worst", "outtmpl": str(job_dir / "audio_src.%(ext)s"),
+    with _youtube_guard(url), _ydl({"format": "ba[ext=m4a]/ba/worst/b", "outtmpl": str(job_dir / "audio_src.%(ext)s"),
                "progress_hooks": [hook]}) as ydl:
         ydl.download([url])
     return _biggest(job_dir, "audio_src")

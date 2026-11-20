@@ -212,6 +212,22 @@ def user_dir(uid: str) -> Path:
     return USERS_DIR / uid
 
 
+def cookies_file() -> Path | None:
+    """Find a cookies.txt file if one exists for YouTube / yt-dlp."""
+    c_env = env("YOUTUBE_COOKIES_FILE") or env("CLIPSX_COOKIES_FILE") or env("COOKIES_FILE")
+    if c_env and Path(c_env).is_file():
+        return Path(c_env)
+    for cand in (DATA_DIR / "cookies.txt", ROOT / "cookies.txt", DATA_DIR / "youtube_cookies.txt", ROOT / "youtube_cookies.txt"):
+        if cand.is_file():
+            return cand
+    raw = env("YOUTUBE_COOKIES") or env("COOKIES_TEXT")
+    if raw and len(raw.strip()) > 20:
+        f = DATA_DIR / "cookies.txt"
+        f.write_text(raw.strip(), encoding="utf-8")
+        return f
+    return None
+
+
 # ---------------------------------------------------------------- the site
 HOST = env("PEAKCUT_HOST", "127.0.0.1")
 PORT = int(env("PEAKCUT_PORT") or "8765")
